@@ -25,14 +25,23 @@ Route::prefix('v1')->group(function () {
     // ========================================================================
     // PUBLIC ROUTES - No authentication required
     // ========================================================================
-    Route::post('auth/register', [AuthController::class, 'register']);
-    Route::post('auth/login', [AuthController::class, 'login']);
-    Route::post('auth/refresh', [AuthController::class, 'refresh']);
+    
+    // Registration - Limited to 2 per hour per IP
+    Route::post('auth/register', [AuthController::class, 'register'])
+        ->middleware('throttle:register');
+    
+    // Login - Limited to 3 per minute per email, 10 per hour
+    Route::post('auth/login', [AuthController::class, 'login'])
+        ->middleware('throttle:login');
+    
+    // Refresh token - Limited to 5 per minute
+    Route::post('auth/refresh', [AuthController::class, 'refresh'])
+        ->middleware('throttle:auth');
 
     // ========================================================================
     // PROTECTED ROUTES - Require authentication (auth:api middleware)
     // ========================================================================
-    Route::middleware('auth:api')->group(function () {
+    Route::middleware(['auth:api', 'throttle:authenticated'])->group(function () {
         
         // Authentication endpoints
         Route::post('auth/logout', [AuthController::class, 'logout']);
@@ -41,7 +50,7 @@ Route::prefix('v1')->group(function () {
         // ====================================================================
         // ADMIN ROUTES - Full access to all resources
         // ====================================================================
-        Route::prefix('admin')->middleware('role:admin')->group(function () {
+        Route::prefix('admin')->middleware(['role:admin', 'throttle:admin'])->group(function () {
             Route::get('dashboard', [AdminController::class, 'dashboard']);
             Route::get('users', [AdminController::class, 'users']);
             Route::put('users/{id}', [AdminController::class, 'manageUser']);
@@ -51,13 +60,15 @@ Route::prefix('v1')->group(function () {
         // ====================================================================
         // VENDOR ROUTES - Manage own products and orders
         // ====================================================================
-        Route::prefix('vendor')->middleware('role:vendor')->group(function () {
+        Route::prefix('vendor')->middleware(['role:vendor', 'throttle:vendor'])->group(function () {
             Route::get('dashboard', [VendorController::class, 'dashboard']);
             
-            // Product management
+            // Product management - Limited to 10/min, 50/hour
             Route::get('products', [VendorController::class, 'products']);
-            Route::post('products', [VendorController::class, 'createProduct']);
-            Route::put('products/{id}', [VendorController::class, 'updateProduct']);
+            Route::post('products', [VendorController::class, 'createProduct'])
+                ->middleware('throttle:products');
+            Route::put('products/{id}', [VendorController::class, 'updateProduct'])
+                ->middleware('throttle:products');
             
             // Order management
             Route::get('orders', [VendorController::class, 'orders']);
@@ -67,11 +78,12 @@ Route::prefix('v1')->group(function () {
         // ====================================================================
         // CUSTOMER ROUTES - Place orders and view order history
         // ====================================================================
-        Route::prefix('customer')->middleware('role:customer')->group(function () {
+        Route::prefix('customer')->middleware(['role:customer', 'throttle:customer'])->group(function () {
             Route::get('dashboard', [CustomerController::class, 'dashboard']);
             
-            // Order management
-            Route::post('orders', [CustomerController::class, 'placeOrder']);
+            // Order management - Limited to 5/min, 20/hour
+            Route::post('orders', [CustomerController::class, 'placeOrder'])
+                ->middleware('throttle:orders');
             Route::get('orders', [CustomerController::class, 'orderHistory']);
             Route::get('orders/{id}', [CustomerController::class, 'orderDetails']);
             Route::delete('orders/{id}', [CustomerController::class, 'cancelOrder']);
