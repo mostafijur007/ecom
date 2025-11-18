@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Get customer dashboard
      */
@@ -15,17 +18,13 @@ class CustomerController extends Controller
     {
         $user = auth('api')->user();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Customer dashboard data',
-            'data' => [
-                'customer_id' => $user->id,
-                'customer_name' => $user->name,
-                'total_orders' => 10,
-                'pending_orders' => 2,
-                'completed_orders' => 8,
-            ]
-        ]);
+        return $this->successResponse([
+            'customer_id' => $user->id,
+            'customer_name' => $user->name,
+            'total_orders' => 10,
+            'pending_orders' => 2,
+            'completed_orders' => 8,
+        ], 'Customer dashboard data');
     }
 
     /**
@@ -43,14 +42,10 @@ class CustomerController extends Controller
         //     'shipping_address' => 'required|string',
         // ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order placement endpoint',
-            'data' => [
-                'customer_id' => $user->id,
-                'note' => 'Implement order creation logic here'
-            ]
-        ], 201);
+        return $this->createdResponse([
+            'customer_id' => $user->id,
+            'note' => 'Implement order creation logic here'
+        ], 'Order placed successfully');
     }
 
     /**
@@ -60,15 +55,11 @@ class CustomerController extends Controller
     {
         $user = auth('api')->user();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order history retrieved',
-            'data' => [
-                'customer_id' => $user->id,
-                'orders' => [], // Implement order listing logic
-                'note' => 'Show orders placed by this customer'
-            ]
-        ]);
+        return $this->successResponse([
+            'customer_id' => $user->id,
+            'orders' => [], // Implement order listing logic
+            'note' => 'Show orders placed by this customer'
+        ], 'Order history retrieved');
     }
 
     /**
@@ -78,15 +69,11 @@ class CustomerController extends Controller
     {
         $user = auth('api')->user();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order details endpoint',
-            'data' => [
-                'customer_id' => $user->id,
-                'order_id' => $id,
-                'note' => 'Implement order details with ownership check'
-            ]
-        ]);
+        return $this->successResponse([
+            'customer_id' => $user->id,
+            'order_id' => $id,
+            'note' => 'Implement order details with ownership check'
+        ], 'Order details retrieved');
     }
 
     /**
@@ -96,15 +83,11 @@ class CustomerController extends Controller
     {
         $user = auth('api')->user();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order cancellation endpoint',
-            'data' => [
-                'customer_id' => $user->id,
-                'order_id' => $id,
-                'note' => 'Implement order cancellation logic with ownership check'
-            ]
-        ]);
+        return $this->successResponse([
+            'customer_id' => $user->id,
+            'order_id' => $id,
+            'note' => 'Implement order cancellation logic with ownership check'
+        ], 'Order cancelled successfully');
     }
 
     /**
@@ -114,13 +97,7 @@ class CustomerController extends Controller
     {
         $user = auth('api')->user();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Customer profile',
-            'data' => [
-                'user' => $user
-            ]
-        ]);
+        return $this->successResponse(['user' => $user], 'Customer profile retrieved');
     }
 
     /**
@@ -130,13 +107,9 @@ class CustomerController extends Controller
     {
         $user = auth('api')->user();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Profile update endpoint',
-            'data' => [
-                'customer_id' => $user->id,
-                'note' => 'Implement profile update logic'
-            ]
-        ]);
+        return $this->successResponse([
+            'customer_id' => $user->id,
+            'note' => 'Implement profile update logic'
+        ], 'Profile updated successfully');
     }
 }

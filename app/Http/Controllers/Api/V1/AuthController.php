@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\RefreshToken;
 use App\Models\User;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,6 +15,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
+    use ApiResponse;
     /**
      * Register a new user
      */
@@ -27,10 +29,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationErrorResponse($validator->errors());
         }
 
         $user = User::create([
@@ -43,17 +42,13 @@ class AuthController extends Controller
         $token = JWTAuth::fromUser($user);
         $refreshToken = $this->createRefreshToken($user, $request);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User registered successfully',
-            'data' => [
-                'user' => $user,
-                'access_token' => $token,
-                'refresh_token' => $refreshToken->token,
-                'token_type' => 'bearer',
-                'expires_in' => config('jwt.ttl') * 60
-            ]
-        ], 201);
+        return $this->createdResponse([
+            'user' => $user,
+            'access_token' => $token,
+            'refresh_token' => $refreshToken->token,
+            'token_type' => 'bearer',
+            'expires_in' => config('jwt.ttl') * 60
+        ], 'User registered successfully');
     }
 
     /**
@@ -67,35 +62,25 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationErrorResponse($validator->errors());
         }
 
         $credentials = $request->only('email', 'password');
 
         if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid credentials'
-            ], 401);
+            return $this->unauthorizedResponse('Invalid credentials');
         }
 
         $user = auth('api')->user();
         $refreshToken = $this->createRefreshToken($user, $request);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'data' => [
-                'user' => $user,
-                'access_token' => $token,
-                'refresh_token' => $refreshToken->token,
-                'token_type' => 'bearer',
-                'expires_in' => auth('api')->factory()->getTTL() * 60
-            ]
-        ]);
+        return $this->successResponse([
+            'user' => $user,
+            'access_token' => $token,
+            'refresh_token' => $refreshToken->token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60
+        ], 'Login successful');
     }
 
     /**
@@ -108,28 +93,19 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationErrorResponse($validator->errors());
         }
 
         // Use the new findByToken method that searches by hash
         $refreshToken = RefreshToken::findByToken($request->refresh_token);
 
         if (!$refreshToken) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid refresh token'
-            ], 401);
+            return $this->unauthorizedResponse('Invalid refresh token');
         }
 
         if ($refreshToken->isExpired()) {
             $refreshToken->delete();
-            return response()->json([
-                'success' => false,
-                'message' => 'Refresh token has expired'
-            ], 401);
+            return $this->unauthorizedResponse('Refresh token has expired');
         }
 
         $user = $refreshToken->user;
@@ -139,16 +115,12 @@ class AuthController extends Controller
         $refreshToken->delete();
         $newRefreshToken = $this->createRefreshToken($user, $request);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Token refreshed successfully',
-            'data' => [
-                'access_token' => $newAccessToken,
-                'refresh_token' => $newRefreshToken->token,
-                'token_type' => 'bearer',
-                'expires_in' => config('jwt.ttl') * 60
-            ]
-        ]);
+        return $this->successResponse([
+            'access_token' => $newAccessToken,
+            'refresh_token' => $newRefreshToken->token,
+            'token_type' => 'bearer',
+            'expires_in' => config('jwt.ttl') * 60
+        ], 'Token refreshed successfully');
     }
 
     /**
@@ -158,12 +130,7 @@ class AuthController extends Controller
     {
         $user = auth('api')->user();
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => $user
-            ]
-        ]);
+        return $this->successResponse(['user' => $user], 'User retrieved successfully');
     }
 
     /**
@@ -179,10 +146,7 @@ class AuthController extends Controller
         // Invalidate the access token
         auth('api')->logout();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully'
-        ]);
+        return $this->successResponse(null, 'Logged out successfully');
     }
 
     /**
