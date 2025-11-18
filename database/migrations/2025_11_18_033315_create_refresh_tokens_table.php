@@ -17,6 +17,8 @@ return new class extends Migration
             $table->text('token'); // Store full token
             $table->string('token_hash', 64)->unique(); // Hash for uniqueness (SHA256)
             $table->timestamp('expires_at');
+            $table->string('ip_address', 45)->nullable(); // IPv4 or IPv6
+            $table->text('user_agent')->nullable();
             $table->timestamps();
             
             $table->index('user_id');
