@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
         // Create Admin
         User::create([
             'name' => 'Admin User',
-            'email' => 'admin@ecommerce.com',
+            'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'email_verified_at' => now(),
@@ -26,28 +26,28 @@ class UserSeeder extends Seeder
         $vendors = [
             [
                 'name' => 'TechVendor Solutions',
-                'email' => 'vendor1@ecommerce.com',
+                'email' => 'vendor@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'vendor',
                 'email_verified_at' => now(),
             ],
             [
                 'name' => 'Fashion House',
-                'email' => 'vendor2@ecommerce.com',
+                'email' => 'vendor2@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'vendor',
                 'email_verified_at' => now(),
             ],
             [
                 'name' => 'Home Essentials Inc',
-                'email' => 'vendor3@ecommerce.com',
+                'email' => 'vendor3@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'vendor',
                 'email_verified_at' => now(),
             ],
             [
                 'name' => 'Sports Pro',
-                'email' => 'vendor4@ecommerce.com',
+                'email' => 'vendor4@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'vendor',
                 'email_verified_at' => now(),
