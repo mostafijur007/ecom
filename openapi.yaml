@@ -16,13 +16,13 @@ info:
     - **Customer**: Place orders and view order history
     
     ## Test Accounts
-    - Admin: admin@example.com / password123
-    - Vendor: vendor@example.com / password123
-    - Customer: customer@example.com / password123
+    - Admin: admin@ecommerce.com / password
+    - Vendor: vendor1@ecommerce.com / password
+    - Customer: customer@example.com / password
   version: 1.0.0
   contact:
     name: API Support
-    email: support@example.com
+    email: mostafijur.til@gmail.com
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

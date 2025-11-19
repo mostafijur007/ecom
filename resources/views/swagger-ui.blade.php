@@ -116,9 +116,9 @@
             <h3>🔑 Test Accounts</h3>
             <p><strong>Use these accounts to test the API:</strong></p>
             <ul>
-                <li><strong>Admin:</strong> admin@example.com / password123</li>
-                <li><strong>Vendor:</strong> vendor@example.com / password123</li>
-                <li><strong>Customer:</strong> customer@example.com / password123</li>
+                <li><strong>Admin:</strong> admin@ecommerce.com / password</li>
+                <li><strong>Vendor:</strong> vendor1@ecommerce.com / password</li>
+                <li><strong>Customer:</strong> customer@example.com / password</li>
             </ul>
         </div>
 

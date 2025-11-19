@@ -13,33 +13,94 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
+        // Create Admin
         User::create([
             'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password123'),
+            'email' => 'admin@ecommerce.com',
+            'password' => Hash::make('password'),
             'role' => 'admin',
+            'email_verified_at' => now(),
         ]);
 
-        // Create vendor user
-        User::create([
-            'name' => 'Vendor User',
-            'email' => 'vendor@example.com',
-            'password' => Hash::make('password123'),
-            'role' => 'vendor',
-        ]);
+        // Create Vendors
+        $vendors = [
+            [
+                'name' => 'TechVendor Solutions',
+                'email' => 'vendor1@ecommerce.com',
+                'password' => Hash::make('password'),
+                'role' => 'vendor',
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Fashion House',
+                'email' => 'vendor2@ecommerce.com',
+                'password' => Hash::make('password'),
+                'role' => 'vendor',
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Home Essentials Inc',
+                'email' => 'vendor3@ecommerce.com',
+                'password' => Hash::make('password'),
+                'role' => 'vendor',
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Sports Pro',
+                'email' => 'vendor4@ecommerce.com',
+                'password' => Hash::make('password'),
+                'role' => 'vendor',
+                'email_verified_at' => now(),
+            ],
+        ];
 
-        // Create customer user
-        User::create([
-            'name' => 'Customer User',
-            'email' => 'customer@example.com',
-            'password' => Hash::make('password123'),
-            'role' => 'customer',
-        ]);
+        foreach ($vendors as $vendor) {
+            User::create($vendor);
+        }
 
-        $this->command->info('Test users created successfully!');
-        $this->command->info('Admin: admin@example.com / password123');
-        $this->command->info('Vendor: vendor@example.com / password123');
-        $this->command->info('Customer: customer@example.com / password123');
+        // Create Customers
+        $customers = [
+            [
+                'name' => 'Md Mostafijur Rahman',
+                'email' => 'mostafijur@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Jane Smith',
+                'email' => 'customer@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Bob Johnson',
+                'email' => 'bob@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Alice Williams',
+                'email' => 'alice@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Charlie Brown',
+                'email' => 'charlie@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'email_verified_at' => now(),
+            ],
+        ];
+
+        foreach ($customers as $customer) {
+            User::create($customer);
+        }
+
+        $this->command->info('Users seeded successfully!');
     }
 }
