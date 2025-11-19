@@ -338,7 +338,10 @@ class OrderService
             return false;
         }
 
-        return $order->items()->where('vendor_id', $vendorId)->exists();
+        // Check if any order item has a product belonging to this vendor
+        return $order->items()->whereHas('product', function ($query) use ($vendorId) {
+            $query->where('vendor_id', $vendorId);
+        })->exists();
     }
 
     /**
