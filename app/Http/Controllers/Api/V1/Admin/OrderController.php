@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\OrderService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +17,8 @@ use Illuminate\Validation\ValidationException;
  */
 class OrderController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private OrderService $orderService
     ) {
@@ -23,7 +26,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/orders",
+     *     path="/admin/orders",
      *     summary="Get all orders (Admin)",
      *     description="Retrieve paginated list of all orders with filtering options",
      *     tags={"Admin - Orders"},
@@ -68,16 +71,27 @@ class OrderController extends Controller
      *         description="Orders retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Orders retrieved successfully"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="data", type="array",
      *                     @OA\Items(ref="#/components/schemas/Order")
      *                 ),
      *                 @OA\Property(property="current_page", type="integer"),
      *                 @OA\Property(property="total", type="integer")
-     *             )
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function index(Request $request): JsonResponse
@@ -87,15 +101,12 @@ class OrderController extends Controller
 
         $orders = $this->orderService->getOrders($filters, $perPage);
 
-        return response()->json([
-            'success' => true,
-            'data' => $orders,
-        ]);
+        return $this->successResponse($orders, 'Orders retrieved successfully');
     }
 
     /**
      * @OA\Get(
-     *     path="/api/admin/orders/{id}",
+     *     path="/admin/orders/{id}",
      *     summary="Get order by ID (Admin)",
      *     description="Retrieve detailed information about a specific order",
      *     tags={"Admin - Orders"},
@@ -112,11 +123,31 @@ class OrderController extends Controller
      *         description="Order retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *             @OA\Property(property="message", type="string", example="Order retrieved successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=404, description="Order not found"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Order not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function show(int $id): JsonResponse
@@ -124,21 +155,15 @@ class OrderController extends Controller
         $order = $this->orderService->getOrderById($id);
 
         if (!$order) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found',
-            ], 404);
+            return $this->notFoundResponse('Order not found');
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $order,
-        ]);
+        return $this->successResponse($order, 'Order retrieved successfully');
     }
 
     /**
      * @OA\Post(
-     *     path="/api/admin/orders",
+     *     path="/admin/orders",
      *     summary="Create new order (Admin)",
      *     description="Create a new order for any customer",
      *     tags={"Admin - Orders"},
@@ -153,11 +178,30 @@ class OrderController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Order created successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *             @OA\Property(property="data", ref="#/components/schemas/Order"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=422, description="Validation error"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function store(Request $request): JsonResponse
@@ -165,28 +209,17 @@ class OrderController extends Controller
         try {
             $order = $this->orderService->createOrder($request->all());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Order created successfully',
-                'data' => $order,
-            ], 201);
+            return $this->createdResponse($order, 'Order created successfully');
         } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationErrorResponse($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse($e->getMessage(), null, 500);
         }
     }
 
     /**
      * @OA\Patch(
-     *     path="/api/admin/orders/{id}/status",
+     *     path="/admin/orders/{id}/status",
      *     summary="Update order status (Admin)",
      *     description="Update the status of any order with workflow validation",
      *     tags={"Admin - Orders"},
@@ -212,12 +245,40 @@ class OrderController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Order status updated successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *             @OA\Property(property="data", ref="#/components/schemas/Order"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=404, description="Order not found"),
-     *     @OA\Response(response=422, description="Invalid status transition"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Order not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Invalid status transition",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function updateStatus(Request $request, int $id): JsonResponse
@@ -228,22 +289,16 @@ class OrderController extends Controller
 
             $order = $this->orderService->updateOrderStatus($id, $status, $notes);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Order status updated successfully',
-                'data' => $order,
-            ]);
+            return $this->successResponse($order, 'Order status updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getMessage() === 'Order not found' ? 404 : 422);
+            $statusCode = $e->getMessage() === 'Order not found' ? 404 : 422;
+            return $this->errorResponse($e->getMessage(), null, $statusCode);
         }
     }
 
     /**
      * @OA\Patch(
-     *     path="/api/admin/orders/{id}/payment",
+     *     path="/admin/orders/{id}/payment",
      *     summary="Update payment status (Admin)",
      *     description="Update the payment status of any order",
      *     tags={"Admin - Orders"},
@@ -269,11 +324,30 @@ class OrderController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Payment status updated successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *             @OA\Property(property="data", ref="#/components/schemas/Order"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=404, description="Order not found"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Order not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function updatePayment(Request $request, int $id): JsonResponse
@@ -284,22 +358,16 @@ class OrderController extends Controller
 
             $order = $this->orderService->updatePaymentStatus($id, $paymentStatus, $transactionId);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment status updated successfully',
-                'data' => $order,
-            ]);
+            return $this->successResponse($order, 'Payment status updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getMessage() === 'Order not found' ? 404 : 500);
+            $statusCode = $e->getMessage() === 'Order not found' ? 404 : 500;
+            return $this->errorResponse($e->getMessage(), null, $statusCode);
         }
     }
 
     /**
      * @OA\Post(
-     *     path="/api/admin/orders/{id}/cancel",
+     *     path="/admin/orders/{id}/cancel",
      *     summary="Cancel order (Admin)",
      *     description="Cancel any order and restore inventory",
      *     tags={"Admin - Orders"},
@@ -323,12 +391,40 @@ class OrderController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Order cancelled successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *             @OA\Property(property="data", ref="#/components/schemas/Order"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=404, description="Order not found"),
-     *     @OA\Response(response=422, description="Cannot cancel order"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Order not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Cannot cancel order",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function cancel(Request $request, int $id): JsonResponse
@@ -337,22 +433,16 @@ class OrderController extends Controller
             $reason = $request->input('reason');
             $order = $this->orderService->cancelOrder($id, $reason);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Order cancelled successfully',
-                'data' => $order,
-            ]);
+            return $this->successResponse($order, 'Order cancelled successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getMessage() === 'Order not found' ? 404 : 422);
+            $statusCode = $e->getMessage() === 'Order not found' ? 404 : 422;
+            return $this->errorResponse($e->getMessage(), null, $statusCode);
         }
     }
 
     /**
      * @OA\Get(
-     *     path="/api/admin/orders/pending",
+     *     path="/admin/orders/pending",
      *     summary="Get pending orders (Admin)",
      *     description="Retrieve all pending orders",
      *     tags={"Admin - Orders"},
@@ -369,9 +459,11 @@ class OrderController extends Controller
      *         description="Pending orders retrieved",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Pending orders retrieved successfully"),
      *             @OA\Property(property="data", type="array",
      *                 @OA\Items(ref="#/components/schemas/Order")
-     *             )
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     )
      * )
@@ -381,15 +473,12 @@ class OrderController extends Controller
         $limit = $request->input('limit', 50);
         $orders = $this->orderService->getPendingOrders($limit);
 
-        return response()->json([
-            'success' => true,
-            'data' => $orders,
-        ]);
+        return $this->successResponse($orders, 'Pending orders retrieved successfully');
     }
 
     /**
      * @OA\Get(
-     *     path="/api/admin/orders/statistics",
+     *     path="/admin/orders/statistics",
      *     summary="Get order statistics (Admin)",
      *     description="Retrieve comprehensive order statistics across all vendors",
      *     tags={"Admin - Orders"},
@@ -406,6 +495,7 @@ class OrderController extends Controller
      *         description="Statistics retrieved",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order statistics retrieved successfully"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="total_orders", type="integer"),
      *                 @OA\Property(property="total_revenue", type="number"),
@@ -415,7 +505,8 @@ class OrderController extends Controller
      *                 @OA\Property(property="shipped_count", type="integer"),
      *                 @OA\Property(property="delivered_count", type="integer"),
      *                 @OA\Property(property="cancelled_count", type="integer")
-     *             )
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     )
      * )
@@ -425,9 +516,6 @@ class OrderController extends Controller
         $vendorId = $request->input('vendor_id');
         $statistics = $this->orderService->getStatistics($vendorId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $statistics,
-        ]);
+        return $this->successResponse($statistics, 'Order statistics retrieved successfully');
     }
 }

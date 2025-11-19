@@ -19,7 +19,9 @@ class RoleMiddleware
         if (!auth()->check()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthenticated'
+                'message' => 'Unauthenticated',
+                'data' => null,
+                'errors' => null,
             ], 401);
         }
 
@@ -28,7 +30,9 @@ class RoleMiddleware
         if (!in_array($user->role, $roles)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Forbidden. You do not have permission to access this resource.'
+                'message' => 'Forbidden. You do not have permission to access this resource.',
+                'data' => null,
+                'errors' => null,
             ], 403);
         }
 

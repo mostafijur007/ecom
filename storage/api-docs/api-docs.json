@@ -15,14 +15,14 @@
         }
     ],
     "paths": {
-        "/api/admin/orders": {
+        "/admin/orders": {
             "get": {
                 "tags": [
                     "Admin - Orders"
                 ],
                 "summary": "Get all orders (Admin)",
                 "description": "Retrieve paginated list of all orders with filtering options",
-                "operationId": "93c3d3ee38971f4bcb0fc703ea7506f6",
+                "operationId": "9ef0f005173b194048f3456b2b0b9f2f",
                 "parameters": [
                     {
                         "name": "status",
@@ -96,6 +96,10 @@
                                             "type": "boolean",
                                             "example": true
                                         },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Orders retrieved successfully"
+                                        },
                                         "data": {
                                             "properties": {
                                                 "data": {
@@ -112,6 +116,10 @@
                                                 }
                                             },
                                             "type": "object"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -120,7 +128,32 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -135,7 +168,7 @@
                 ],
                 "summary": "Create new order (Admin)",
                 "description": "Create a new order for any customer",
-                "operationId": "01700222c9ec0075d8f185152fba27b3",
+                "operationId": "027ad81120fee89bc48c4e559a2537a9",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -163,6 +196,10 @@
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Order"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -171,10 +208,59 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -184,14 +270,14 @@
                 ]
             }
         },
-        "/api/admin/orders/{id}": {
+        "/admin/orders/{id}": {
             "get": {
                 "tags": [
                     "Admin - Orders"
                 ],
                 "summary": "Get order by ID (Admin)",
                 "description": "Retrieve detailed information about a specific order",
-                "operationId": "7629fe6d912fab22bd0dcc049e858b74",
+                "operationId": "95f5e33d1d9d939d5087331bfe5574f9",
                 "parameters": [
                     {
                         "name": "id",
@@ -214,8 +300,16 @@
                                             "type": "boolean",
                                             "example": true
                                         },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order retrieved successfully"
+                                        },
                                         "data": {
                                             "$ref": "#/components/schemas/Order"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -224,10 +318,60 @@
                         }
                     },
                     "404": {
-                        "description": "Order not found"
+                        "description": "Order not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -237,14 +381,14 @@
                 ]
             }
         },
-        "/api/admin/orders/{id}/status": {
+        "/admin/orders/{id}/status": {
             "patch": {
                 "tags": [
                     "Admin - Orders"
                 ],
                 "summary": "Update order status (Admin)",
                 "description": "Update the status of any order with workflow validation",
-                "operationId": "f91f927c2cdce1e66c6858e08916b65b",
+                "operationId": "43f0d3aff58da4a5a2ab6b674b328ac1",
                 "parameters": [
                     {
                         "name": "id",
@@ -303,6 +447,10 @@
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Order"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -311,13 +459,87 @@
                         }
                     },
                     "404": {
-                        "description": "Order not found"
+                        "description": "Order not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Invalid status transition"
+                        "description": "Invalid status transition",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -327,14 +549,14 @@
                 ]
             }
         },
-        "/api/admin/orders/{id}/payment": {
+        "/admin/orders/{id}/payment": {
             "patch": {
                 "tags": [
                     "Admin - Orders"
                 ],
                 "summary": "Update payment status (Admin)",
                 "description": "Update the payment status of any order",
-                "operationId": "8b7e1e884a2200df9b77ac8e43165261",
+                "operationId": "6cdf81eed8c0e21192054946a55c4806",
                 "parameters": [
                     {
                         "name": "id",
@@ -391,6 +613,10 @@
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Order"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -399,10 +625,60 @@
                         }
                     },
                     "404": {
-                        "description": "Order not found"
+                        "description": "Order not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -412,14 +688,14 @@
                 ]
             }
         },
-        "/api/admin/orders/{id}/cancel": {
+        "/admin/orders/{id}/cancel": {
             "post": {
                 "tags": [
                     "Admin - Orders"
                 ],
                 "summary": "Cancel order (Admin)",
                 "description": "Cancel any order and restore inventory",
-                "operationId": "fc379689b36f893238fa720ccf8e370b",
+                "operationId": "55d4af23ea7bfacecef7ed6c965a24bb",
                 "parameters": [
                     {
                         "name": "id",
@@ -464,6 +740,10 @@
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Order"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -472,13 +752,87 @@
                         }
                     },
                     "404": {
-                        "description": "Order not found"
+                        "description": "Order not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Cannot cancel order"
+                        "description": "Cannot cancel order",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -488,14 +842,14 @@
                 ]
             }
         },
-        "/api/admin/orders/pending": {
+        "/admin/orders/pending": {
             "get": {
                 "tags": [
                     "Admin - Orders"
                 ],
                 "summary": "Get pending orders (Admin)",
                 "description": "Retrieve all pending orders",
-                "operationId": "0d4167f6c22c9b946e496edc4d84bf5c",
+                "operationId": "daa7a823d16722bd2d5cf436cec4ac9c",
                 "parameters": [
                     {
                         "name": "limit",
@@ -519,11 +873,19 @@
                                             "type": "boolean",
                                             "example": true
                                         },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pending orders retrieved successfully"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/components/schemas/Order"
                                             }
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -539,14 +901,14 @@
                 ]
             }
         },
-        "/api/admin/orders/statistics": {
+        "/admin/orders/statistics": {
             "get": {
                 "tags": [
                     "Admin - Orders"
                 ],
                 "summary": "Get order statistics (Admin)",
                 "description": "Retrieve comprehensive order statistics across all vendors",
-                "operationId": "83119244655eb5116c8d8ba402cc4103",
+                "operationId": "fabfa6c63f22caa8e037730d613966d6",
                 "parameters": [
                     {
                         "name": "vendor_id",
@@ -568,6 +930,10 @@
                                         "success": {
                                             "type": "boolean",
                                             "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order statistics retrieved successfully"
                                         },
                                         "data": {
                                             "properties": {
@@ -597,6 +963,10 @@
                                                 }
                                             },
                                             "type": "object"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -683,6 +1053,10 @@
                                             "type": "boolean",
                                             "example": true
                                         },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Products retrieved successfully"
+                                        },
                                         "data": {
                                             "properties": {
                                                 "data": {
@@ -699,6 +1073,10 @@
                                                 }
                                             },
                                             "type": "object"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -707,7 +1085,32 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -750,6 +1153,10 @@
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Product"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -758,10 +1165,59 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -801,8 +1257,16 @@
                                             "type": "boolean",
                                             "example": true
                                         },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product retrieved successfully"
+                                        },
                                         "data": {
                                             "$ref": "#/components/schemas/Product"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -814,7 +1278,32 @@
                         "description": "Product not found"
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -868,6 +1357,10 @@
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Product"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -876,13 +1369,87 @@
                         }
                     },
                     "404": {
-                        "description": "Product not found"
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -923,6 +1490,14 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Product deleted successfully"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -931,10 +1506,60 @@
                         }
                     },
                     "404": {
-                        "description": "Product not found"
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -985,8 +1610,16 @@
                                             "type": "boolean",
                                             "example": true
                                         },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Search results retrieved successfully"
+                                        },
                                         "data": {
                                             "type": "object"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -995,7 +1628,31 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1043,7 +1700,8 @@
                                             "example": true
                                         },
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Imported 10 products, 2 failed"
                                         },
                                         "data": {
                                             "properties": {
@@ -1061,6 +1719,10 @@
                                                 }
                                             },
                                             "type": "object"
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
@@ -1106,11 +1768,19 @@
                                             "type": "boolean",
                                             "example": true
                                         },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Low stock products retrieved successfully"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/components/schemas/Product"
                                             }
+                                        },
+                                        "errors": {
+                                            "type": "null",
+                                            "example": null
                                         }
                                     },
                                     "type": "object"
