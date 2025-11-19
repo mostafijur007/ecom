@@ -1,0 +1,433 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Services\OrderService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+
+/**
+ * @OA\Tag(
+ *     name="Admin - Orders",
+ *     description="Admin order management endpoints"
+ * )
+ */
+class OrderController extends Controller
+{
+    public function __construct(
+        private OrderService $orderService
+    ) {
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/orders",
+     *     summary="Get all orders (Admin)",
+     *     description="Retrieve paginated list of all orders with filtering options",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by order status",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pending", "processing", "shipped", "delivered", "cancelled", "returned"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="payment_status",
+     *         in="query",
+     *         description="Filter by payment status",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pending", "paid", "failed", "refunded"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="customer_id",
+     *         in="query",
+     *         description="Filter by customer ID",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="vendor_id",
+     *         in="query",
+     *         description="Filter by vendor ID",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Orders retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="data", type="array",
+     *                     @OA\Items(ref="#/components/schemas/Order")
+     *                 ),
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $filters = $request->only(['status', 'payment_status', 'customer_id', 'vendor_id']);
+        $perPage = $request->input('per_page', 15);
+
+        $orders = $this->orderService->getOrders($filters, $perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $orders,
+        ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/orders/{id}",
+     *     summary="Get order by ID (Admin)",
+     *     description="Retrieve detailed information about a specific order",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Order ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Order not found"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function show(int $id): JsonResponse
+    {
+        $order = $this->orderService->getOrderById($id);
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $order,
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/admin/orders",
+     *     summary="Create new order (Admin)",
+     *     description="Create a new order for any customer",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/OrderRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Order created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order created successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function store(Request $request): JsonResponse
+    {
+        try {
+            $order = $this->orderService->createOrder($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order created successfully',
+                'data' => $order,
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/admin/orders/{id}/status",
+     *     summary="Update order status (Admin)",
+     *     description="Update the status of any order with workflow validation",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Order ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="string", enum={"pending", "processing", "shipped", "delivered", "cancelled", "returned"}),
+     *             @OA\Property(property="notes", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order status updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Order not found"),
+     *     @OA\Response(response=422, description="Invalid status transition"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        try {
+            $status = $request->input('status');
+            $notes = $request->input('notes');
+
+            $order = $this->orderService->updateOrderStatus($id, $status, $notes);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order status updated successfully',
+                'data' => $order,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], $e->getMessage() === 'Order not found' ? 404 : 422);
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/admin/orders/{id}/payment",
+     *     summary="Update payment status (Admin)",
+     *     description="Update the payment status of any order",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Order ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"payment_status"},
+     *             @OA\Property(property="payment_status", type="string", enum={"pending", "paid", "failed", "refunded"}),
+     *             @OA\Property(property="transaction_id", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Payment status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Payment status updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Order not found"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function updatePayment(Request $request, int $id): JsonResponse
+    {
+        try {
+            $paymentStatus = $request->input('payment_status');
+            $transactionId = $request->input('transaction_id');
+
+            $order = $this->orderService->updatePaymentStatus($id, $paymentStatus, $transactionId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment status updated successfully',
+                'data' => $order,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], $e->getMessage() === 'Order not found' ? 404 : 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/admin/orders/{id}/cancel",
+     *     summary="Cancel order (Admin)",
+     *     description="Cancel any order and restore inventory",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Order ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="reason", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order cancelled successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order cancelled successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Order not found"),
+     *     @OA\Response(response=422, description="Cannot cancel order"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function cancel(Request $request, int $id): JsonResponse
+    {
+        try {
+            $reason = $request->input('reason');
+            $order = $this->orderService->cancelOrder($id, $reason);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order cancelled successfully',
+                'data' => $order,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], $e->getMessage() === 'Order not found' ? 404 : 422);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/orders/pending",
+     *     summary="Get pending orders (Admin)",
+     *     description="Retrieve all pending orders",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="Maximum number of orders to return",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=50)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Pending orders retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array",
+     *                 @OA\Items(ref="#/components/schemas/Order")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function pending(Request $request): JsonResponse
+    {
+        $limit = $request->input('limit', 50);
+        $orders = $this->orderService->getPendingOrders($limit);
+
+        return response()->json([
+            'success' => true,
+            'data' => $orders,
+        ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/orders/statistics",
+     *     summary="Get order statistics (Admin)",
+     *     description="Retrieve comprehensive order statistics across all vendors",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="vendor_id",
+     *         in="query",
+     *         description="Filter statistics by vendor ID",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Statistics retrieved",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="total_orders", type="integer"),
+     *                 @OA\Property(property="total_revenue", type="number"),
+     *                 @OA\Property(property="average_order_value", type="number"),
+     *                 @OA\Property(property="pending_count", type="integer"),
+     *                 @OA\Property(property="processing_count", type="integer"),
+     *                 @OA\Property(property="shipped_count", type="integer"),
+     *                 @OA\Property(property="delivered_count", type="integer"),
+     *                 @OA\Property(property="cancelled_count", type="integer")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $vendorId = $request->input('vendor_id');
+        $statistics = $this->orderService->getStatistics($vendorId);
+
+        return response()->json([
+            'success' => true,
+            'data' => $statistics,
+        ]);
+    }
+}

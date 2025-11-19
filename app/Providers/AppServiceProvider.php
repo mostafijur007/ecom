@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Repositories\Interfaces\ProductRepositoryInterface;
+use App\Repositories\Interfaces\OrderRepositoryInterface;
+use App\Repositories\Interfaces\CategoryRepositoryInterface;
+use App\Repositories\ProductRepository;
+use App\Repositories\OrderRepository;
+use App\Repositories\CategoryRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -15,7 +21,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind Repository Interfaces to Concrete Implementations
+        $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
+        $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
+        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
+
+        // Services are automatically resolved by Laravel's dependency injection
+        // ProductService and OrderService will be auto-injected when needed
     }
 
     /**

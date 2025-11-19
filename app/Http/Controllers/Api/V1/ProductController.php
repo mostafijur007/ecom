@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * @OA\Tag(
- *     name="Products",
- *     description="Product management endpoints"
+ *     name="Admin - Products",
+ *     description="Admin product management endpoints - Full CRUD operations for products"
  * )
  */
 class ProductController extends Controller
@@ -23,11 +23,11 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/products",
-     *     summary="Get list of products",
-     *     description="Retrieve paginated list of products with optional filtering and search",
-     *     operationId="getProducts",
-     *     tags={"Products"},
+     *     path="/api/v1/admin/products",
+     *     summary="Get list of products (Admin)",
+     *     description="Retrieve paginated list of products with optional filtering and search. Admin only.",
+     *     operationId="adminGetProducts",
+     *     tags={"Admin - Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="search",
@@ -121,7 +121,8 @@ class ProductController extends Controller
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=401, description="Unauthenticated")
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Unauthorized - Admin access required")
      * )
      *
      * Display a listing of products with filtering and search
@@ -182,11 +183,11 @@ class ProductController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/products",
-     *     summary="Create a new product",
-     *     description="Create a new product (Vendor/Admin only)",
-     *     operationId="createProduct",
-     *     tags={"Products"},
+     *     path="/api/v1/admin/products",
+     *     summary="Create a new product (Admin)",
+     *     description="Create a new product. Admin only.",
+     *     operationId="adminCreateProduct",
+     *     tags={"Admin - Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -223,7 +224,7 @@ class ProductController extends Controller
      *     ),
      *     @OA\Response(response=400, description="Validation error"),
      *     @OA\Response(response=401, description="Unauthenticated"),
-     *     @OA\Response(response=403, description="Forbidden - Not a vendor or admin")
+     *     @OA\Response(response=403, description="Unauthorized - Admin access required")
      * )
      *
      * Store a newly created product
@@ -271,11 +272,11 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/products/{id}",
-     *     summary="Get product details",
-     *     description="Retrieve detailed information about a specific product",
-     *     operationId="getProduct",
-     *     tags={"Products"},
+     *     path="/api/v1/admin/products/{id}",
+     *     summary="Get product details (Admin)",
+     *     description="Retrieve detailed information about a specific product. Admin only.",
+     *     operationId="adminGetProduct",
+     *     tags={"Admin - Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -294,7 +295,8 @@ class ProductController extends Controller
      *         )
      *     ),
      *     @OA\Response(response=404, description="Product not found"),
-     *     @OA\Response(response=401, description="Unauthenticated")
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Unauthorized - Admin access required")
      * )
      *
      * Display the specified product
@@ -315,11 +317,11 @@ class ProductController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/v1/products/{id}",
-     *     summary="Update product",
-     *     description="Update an existing product (Owner/Admin only)",
-     *     operationId="updateProduct",
-     *     tags={"Products"},
+     *     path="/api/v1/admin/products/{id}",
+     *     summary="Update product (Admin)",
+     *     description="Update an existing product. Admin only.",
+     *     operationId="adminUpdateProduct",
+     *     tags={"Admin - Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -353,7 +355,7 @@ class ProductController extends Controller
      *         )
      *     ),
      *     @OA\Response(response=400, description="Validation error"),
-     *     @OA\Response(response=403, description="Forbidden - Can only update own products"),
+     *     @OA\Response(response=403, description="Unauthorized - Admin access required"),
      *     @OA\Response(response=404, description="Product not found")
      * )
      *
@@ -415,11 +417,11 @@ class ProductController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/v1/products/{id}",
-     *     summary="Delete product",
-     *     description="Soft delete a product (Owner/Admin only)",
-     *     operationId="deleteProduct",
-     *     tags={"Products"},
+     *     path="/api/v1/admin/products/{id}",
+     *     summary="Delete product (Admin)",
+     *     description="Soft delete a product. Admin only.",
+     *     operationId="adminDeleteProduct",
+     *     tags={"Admin - Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -437,7 +439,7 @@ class ProductController extends Controller
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
-     *     @OA\Response(response=403, description="Forbidden - Can only delete own products"),
+     *     @OA\Response(response=403, description="Unauthorized - Admin access required"),
      *     @OA\Response(response=404, description="Product not found")
      * )
      *
@@ -466,11 +468,11 @@ class ProductController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/products/bulk-import",
-     *     summary="Bulk import products from CSV",
-     *     description="Import multiple products from a CSV file (Vendor/Admin only)",
-     *     operationId="bulkImportProducts",
-     *     tags={"Products"},
+     *     path="/api/v1/admin/products/bulk-import",
+     *     summary="Bulk import products from CSV (Admin)",
+     *     description="Import multiple products from a CSV file. Admin only.",
+     *     operationId="adminBulkImportProducts",
+     *     tags={"Admin - Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -501,7 +503,7 @@ class ProductController extends Controller
      *         )
      *     ),
      *     @OA\Response(response=400, description="Validation error"),
-     *     @OA\Response(response=403, description="Forbidden - Not a vendor or admin")
+     *     @OA\Response(response=403, description="Unauthorized - Admin access required")
      * )
      *
      * Bulk import products from CSV
@@ -574,11 +576,11 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/products/search",
-     *     summary="Search products",
-     *     description="Full-text search on product name and description",
-     *     operationId="searchProducts",
-     *     tags={"Products"},
+     *     path="/api/v1/admin/products/search",
+     *     summary="Search products (Admin)",
+     *     description="Full-text search on product name and description. Admin only.",
+     *     operationId="adminSearchProducts",
+     *     tags={"Admin - Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="q",
@@ -603,7 +605,8 @@ class ProductController extends Controller
      *         )
      *     ),
      *     @OA\Response(response=400, description="Validation error"),
-     *     @OA\Response(response=401, description="Unauthenticated")
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Unauthorized - Admin access required")
      * )
      *
      * Search products with full-text search

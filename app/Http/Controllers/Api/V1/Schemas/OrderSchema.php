@@ -112,8 +112,92 @@ namespace App\Http\Controllers\Api\V1\Schemas;
  *         example="paid"
  *     ),
  *     @OA\Property(property="pdf_path", type="string", nullable=true, example="/storage/invoices/INV-20240118-0001.pdf"),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-18T10:30:00Z"),
+ * @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-18T10:30:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-18T10:30:00Z")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="OrderRequest",
+ *     title="Order Request",
+ *     description="Request body for creating a new order",
+ *     required={"user_id", "items"},
+ *     @OA\Property(
+ *         property="user_id",
+ *         type="integer",
+ *         description="Customer user ID",
+ *         example=5
+ *     ),
+ *     @OA\Property(
+ *         property="items",
+ *         type="array",
+ *         description="Array of order items",
+ *         @OA\Items(
+ *             type="object",
+ *             required={"product_id", "quantity"},
+ *             @OA\Property(property="product_id", type="integer", example=10),
+ *             @OA\Property(property="quantity", type="integer", example=2)
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="payment_method",
+ *         type="string",
+ *         enum={"cod", "credit_card", "debit_card", "paypal", "stripe"},
+ *         example="credit_card"
+ *     ),
+ *     @OA\Property(
+ *         property="payment_status",
+ *         type="string",
+ *         enum={"pending", "paid", "failed", "refunded"},
+ *         example="pending"
+ *     ),
+ *     @OA\Property(
+ *         property="shipping_cost",
+ *         type="number",
+ *         format="float",
+ *         example=10.00
+ *     ),
+ *     @OA\Property(
+ *         property="discount",
+ *         type="number",
+ *         format="float",
+ *         example=0.00
+ *     ),
+ *     @OA\Property(
+ *         property="tax",
+ *         type="number",
+ *         format="float",
+ *         example=12.00
+ *     ),
+ *     @OA\Property(
+ *         property="notes",
+ *         type="string",
+ *         nullable=true,
+ *         example="Please ring doorbell"
+ *     ),
+ *     @OA\Property(
+ *         property="shipping_address",
+ *         type="object",
+ *         nullable=true,
+ *         @OA\Property(property="name", type="string", example="John Doe"),
+ *         @OA\Property(property="phone", type="string", example="+1234567890"),
+ *         @OA\Property(property="address", type="string", example="123 Main St"),
+ *         @OA\Property(property="city", type="string", example="New York"),
+ *         @OA\Property(property="state", type="string", example="NY"),
+ *         @OA\Property(property="postal_code", type="string", example="10001"),
+ *         @OA\Property(property="country", type="string", example="USA")
+ *     ),
+ *     @OA\Property(
+ *         property="billing_address",
+ *         type="object",
+ *         nullable=true,
+ *         @OA\Property(property="name", type="string", example="John Doe"),
+ *         @OA\Property(property="phone", type="string", example="+1234567890"),
+ *         @OA\Property(property="address", type="string", example="123 Main St"),
+ *         @OA\Property(property="city", type="string", example="New York"),
+ *         @OA\Property(property="state", type="string", example="NY"),
+ *         @OA\Property(property="postal_code", type="string", example="10001"),
+ *         @OA\Property(property="country", type="string", example="USA")
+ *     )
  * )
  */
 class OrderSchema

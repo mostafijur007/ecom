@@ -15,6 +15,1117 @@
         }
     ],
     "paths": {
+        "/api/admin/orders": {
+            "get": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Get all orders (Admin)",
+                "description": "Retrieve paginated list of all orders with filtering options",
+                "operationId": "93c3d3ee38971f4bcb0fc703ea7506f6",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by order status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "processing",
+                                "shipped",
+                                "delivered",
+                                "cancelled",
+                                "returned"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "payment_status",
+                        "in": "query",
+                        "description": "Filter by payment status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "paid",
+                                "failed",
+                                "refunded"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "customer_id",
+                        "in": "query",
+                        "description": "Filter by customer ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "vendor_id",
+                        "in": "query",
+                        "description": "Filter by vendor ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orders retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Order"
+                                                    }
+                                                },
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Create new order (Admin)",
+                "description": "Create a new order for any customer",
+                "operationId": "01700222c9ec0075d8f185152fba27b3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Order created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order created successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Get order by ID (Admin)",
+                "description": "Retrieve detailed information about a specific order",
+                "operationId": "7629fe6d912fab22bd0dcc049e858b74",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders/{id}/status": {
+            "patch": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Update order status (Admin)",
+                "description": "Update the status of any order with workflow validation",
+                "operationId": "f91f927c2cdce1e66c6858e08916b65b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "processing",
+                                            "shipped",
+                                            "delivered",
+                                            "cancelled",
+                                            "returned"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order status updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found"
+                    },
+                    "422": {
+                        "description": "Invalid status transition"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders/{id}/payment": {
+            "patch": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Update payment status (Admin)",
+                "description": "Update the payment status of any order",
+                "operationId": "8b7e1e884a2200df9b77ac8e43165261",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "payment_status"
+                                ],
+                                "properties": {
+                                    "payment_status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "paid",
+                                            "failed",
+                                            "refunded"
+                                        ]
+                                    },
+                                    "transaction_id": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Payment status updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Cancel order (Admin)",
+                "description": "Cancel any order and restore inventory",
+                "operationId": "fc379689b36f893238fa720ccf8e370b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order cancelled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order cancelled successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found"
+                    },
+                    "422": {
+                        "description": "Cannot cancel order"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders/pending": {
+            "get": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Get pending orders (Admin)",
+                "description": "Retrieve all pending orders",
+                "operationId": "0d4167f6c22c9b946e496edc4d84bf5c",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Maximum number of orders to return",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pending orders retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/orders/statistics": {
+            "get": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Get order statistics (Admin)",
+                "description": "Retrieve comprehensive order statistics across all vendors",
+                "operationId": "83119244655eb5116c8d8ba402cc4103",
+                "parameters": [
+                    {
+                        "name": "vendor_id",
+                        "in": "query",
+                        "description": "Filter statistics by vendor ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statistics retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_orders": {
+                                                    "type": "integer"
+                                                },
+                                                "total_revenue": {
+                                                    "type": "number"
+                                                },
+                                                "average_order_value": {
+                                                    "type": "number"
+                                                },
+                                                "pending_count": {
+                                                    "type": "integer"
+                                                },
+                                                "processing_count": {
+                                                    "type": "integer"
+                                                },
+                                                "shipped_count": {
+                                                    "type": "integer"
+                                                },
+                                                "delivered_count": {
+                                                    "type": "integer"
+                                                },
+                                                "cancelled_count": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/products": {
+            "get": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Get all products (Admin)",
+                "description": "Retrieve paginated list of all products with filtering options",
+                "operationId": "613b133984b2c0c4f98986eea07c55ce",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter by category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "vendor_id",
+                        "in": "query",
+                        "description": "Filter by vendor ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status (active/inactive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "inactive"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "featured",
+                        "in": "query",
+                        "description": "Filter by featured flag",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Products retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Product"
+                                                    }
+                                                },
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Create new product (Admin)",
+                "description": "Create a new product for any vendor",
+                "operationId": "32ccba54791760cc527c2a6a8cad8554",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product created successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/products/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Get product by ID (Admin)",
+                "description": "Retrieve detailed information about a specific product",
+                "operationId": "a8d720c97822fa89675a9c92f9b1792b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Update product (Admin)",
+                "description": "Update any product",
+                "operationId": "1297ec18b27c2dc534da2de4462a9845",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Delete product (Admin)",
+                "description": "Soft delete any product",
+                "operationId": "298f317196605ea62bd2f68f502c8981",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/products/search": {
+            "get": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Search products (Admin)",
+                "description": "Full-text search across product name, description, SKU",
+                "operationId": "1d2c57815f58381b28c30c4573c41a4e",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search query (minimum 2 characters)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "minLength": 2
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/products/bulk-import": {
+            "post": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Bulk import products (Admin)",
+                "description": "Import multiple products from CSV data",
+                "operationId": "425bdcd0066b332577de5f00bbd5a7fe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "products": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/ProductRequest"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Import completed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "imported": {
+                                                    "type": "integer"
+                                                },
+                                                "failed": {
+                                                    "type": "integer"
+                                                },
+                                                "errors": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/products/low-stock": {
+            "get": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Get low stock products (Admin)",
+                "description": "Retrieve all products with stock below threshold",
+                "operationId": "4ec8cc79946247897d8d7cd1e0237047",
+                "parameters": [
+                    {
+                        "name": "vendor_id",
+                        "in": "query",
+                        "description": "Filter by vendor ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Low stock products retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/auth/register": {
             "post": {
                 "tags": [
@@ -166,7 +1277,7 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "customer@ecom.com"
+                                        "example": "customer@example.com"
                                     },
                                     "password": {
                                         "type": "string",
@@ -1002,14 +2113,14 @@
                 ]
             }
         },
-        "/api/v1/products": {
+        "/api/v1/admin/products": {
             "get": {
                 "tags": [
-                    "Products"
+                    "Admin - Products"
                 ],
-                "summary": "Get list of products",
-                "description": "Retrieve paginated list of products with optional filtering and search",
-                "operationId": "getProducts",
+                "summary": "Get list of products (Admin)",
+                "description": "Retrieve paginated list of products with optional filtering and search. Admin only.",
+                "operationId": "adminGetProducts",
                 "parameters": [
                     {
                         "name": "search",
@@ -1160,6 +2271,9 @@
                     },
                     "401": {
                         "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized - Admin access required"
                     }
                 },
                 "security": [
@@ -1170,11 +2284,11 @@
             },
             "post": {
                 "tags": [
-                    "Products"
+                    "Admin - Products"
                 ],
-                "summary": "Create a new product",
-                "description": "Create a new product (Vendor/Admin only)",
-                "operationId": "createProduct",
+                "summary": "Create a new product (Admin)",
+                "description": "Create a new product. Admin only.",
+                "operationId": "adminCreateProduct",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1311,7 +2425,7 @@
                         "description": "Unauthenticated"
                     },
                     "403": {
-                        "description": "Forbidden - Not a vendor or admin"
+                        "description": "Unauthorized - Admin access required"
                     }
                 },
                 "security": [
@@ -1321,14 +2435,14 @@
                 ]
             }
         },
-        "/api/v1/products/{id}": {
+        "/api/v1/admin/products/{id}": {
             "get": {
                 "tags": [
-                    "Products"
+                    "Admin - Products"
                 ],
-                "summary": "Get product details",
-                "description": "Retrieve detailed information about a specific product",
-                "operationId": "getProduct",
+                "summary": "Get product details (Admin)",
+                "description": "Retrieve detailed information about a specific product. Admin only.",
+                "operationId": "adminGetProduct",
                 "parameters": [
                     {
                         "name": "id",
@@ -1369,6 +2483,9 @@
                     },
                     "401": {
                         "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized - Admin access required"
                     }
                 },
                 "security": [
@@ -1379,11 +2496,11 @@
             },
             "put": {
                 "tags": [
-                    "Products"
+                    "Admin - Products"
                 ],
-                "summary": "Update product",
-                "description": "Update an existing product (Owner/Admin only)",
-                "operationId": "updateProduct",
+                "summary": "Update product (Admin)",
+                "description": "Update an existing product. Admin only.",
+                "operationId": "adminUpdateProduct",
                 "parameters": [
                     {
                         "name": "id",
@@ -1467,7 +2584,7 @@
                         "description": "Validation error"
                     },
                     "403": {
-                        "description": "Forbidden - Can only update own products"
+                        "description": "Unauthorized - Admin access required"
                     },
                     "404": {
                         "description": "Product not found"
@@ -1481,11 +2598,11 @@
             },
             "delete": {
                 "tags": [
-                    "Products"
+                    "Admin - Products"
                 ],
-                "summary": "Delete product",
-                "description": "Soft delete a product (Owner/Admin only)",
-                "operationId": "deleteProduct",
+                "summary": "Delete product (Admin)",
+                "description": "Soft delete a product. Admin only.",
+                "operationId": "adminDeleteProduct",
                 "parameters": [
                     {
                         "name": "id",
@@ -1522,7 +2639,7 @@
                         }
                     },
                     "403": {
-                        "description": "Forbidden - Can only delete own products"
+                        "description": "Unauthorized - Admin access required"
                     },
                     "404": {
                         "description": "Product not found"
@@ -1535,14 +2652,14 @@
                 ]
             }
         },
-        "/api/v1/products/bulk-import": {
+        "/api/v1/admin/products/bulk-import": {
             "post": {
                 "tags": [
-                    "Products"
+                    "Admin - Products"
                 ],
-                "summary": "Bulk import products from CSV",
-                "description": "Import multiple products from a CSV file (Vendor/Admin only)",
-                "operationId": "bulkImportProducts",
+                "summary": "Bulk import products from CSV (Admin)",
+                "description": "Import multiple products from a CSV file. Admin only.",
+                "operationId": "adminBulkImportProducts",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1600,7 +2717,7 @@
                         "description": "Validation error"
                     },
                     "403": {
-                        "description": "Forbidden - Not a vendor or admin"
+                        "description": "Unauthorized - Admin access required"
                     }
                 },
                 "security": [
@@ -1610,14 +2727,14 @@
                 ]
             }
         },
-        "/api/v1/products/search": {
+        "/api/v1/admin/products/search": {
             "get": {
                 "tags": [
-                    "Products"
+                    "Admin - Products"
                 ],
-                "summary": "Search products",
-                "description": "Full-text search on product name and description",
-                "operationId": "searchProducts",
+                "summary": "Search products (Admin)",
+                "description": "Full-text search on product name and description. Admin only.",
+                "operationId": "adminSearchProducts",
                 "parameters": [
                     {
                         "name": "q",
@@ -1673,6 +2790,835 @@
                     },
                     "401": {
                         "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized - Admin access required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/orders": {
+            "get": {
+                "tags": [
+                    "Vendor - Orders"
+                ],
+                "summary": "Get vendor's orders",
+                "description": "Retrieve paginated list of orders containing vendor's products",
+                "operationId": "04ce19ccad8fe5252298d89c7724b111",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by order status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "processing",
+                                "shipped",
+                                "delivered",
+                                "cancelled",
+                                "returned"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "payment_status",
+                        "in": "query",
+                        "description": "Filter by payment status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "paid",
+                                "failed",
+                                "refunded"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orders retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Vendor - Orders"
+                ],
+                "summary": "Get order by ID (Vendor)",
+                "description": "Retrieve detailed information about order containing vendor's products",
+                "operationId": "93aa11ae3fbc816cde36bee43cdef4e8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not your order"
+                    },
+                    "404": {
+                        "description": "Order not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/orders/{id}/status": {
+            "patch": {
+                "tags": [
+                    "Vendor - Orders"
+                ],
+                "summary": "Update order status (Vendor)",
+                "description": "Update status of order containing vendor's products (limited transitions)",
+                "operationId": "48420f676ba1b6ccf66e036a836a5a1e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "processing",
+                                            "shipped"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order status updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not your order or invalid status"
+                    },
+                    "404": {
+                        "description": "Order not found"
+                    },
+                    "422": {
+                        "description": "Invalid status transition"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/orders/statistics": {
+            "get": {
+                "tags": [
+                    "Vendor - Orders"
+                ],
+                "summary": "Get vendor's order statistics",
+                "description": "Retrieve order statistics for vendor's products only",
+                "operationId": "ad47390772f73c7e067db7918a01100b",
+                "responses": {
+                    "200": {
+                        "description": "Statistics retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_orders": {
+                                                    "type": "integer"
+                                                },
+                                                "total_revenue": {
+                                                    "type": "number"
+                                                },
+                                                "average_order_value": {
+                                                    "type": "number"
+                                                },
+                                                "pending_count": {
+                                                    "type": "integer"
+                                                },
+                                                "processing_count": {
+                                                    "type": "integer"
+                                                },
+                                                "shipped_count": {
+                                                    "type": "integer"
+                                                },
+                                                "delivered_count": {
+                                                    "type": "integer"
+                                                },
+                                                "cancelled_count": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/orders/recent": {
+            "get": {
+                "tags": [
+                    "Vendor - Orders"
+                ],
+                "summary": "Get vendor's recent orders",
+                "description": "Retrieve recent orders containing vendor's products",
+                "operationId": "58fcd7ebdb343845efb74813d5aeaa34",
+                "parameters": [
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "description": "Number of days to look back",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 7
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Maximum number of orders to return",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Recent orders retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/products": {
+            "get": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Get vendor's products",
+                "description": "Retrieve paginated list of products owned by authenticated vendor",
+                "operationId": "1654a31e9477771b3ad8d2b9773c50bb",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter by category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status (active/inactive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "inactive"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "featured",
+                        "in": "query",
+                        "description": "Filter by featured flag",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Products retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Create new product (Vendor)",
+                "description": "Create a new product for authenticated vendor",
+                "operationId": "5e95b454f217beb7e3dd6b88e35a6cce",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product created successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/products/{id}": {
+            "get": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Get product by ID (Vendor)",
+                "description": "Retrieve detailed information about vendor's own product",
+                "operationId": "7ce59dd1cc35ad80c11546868a754033",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not your product"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Update product (Vendor)",
+                "description": "Update vendor's own product",
+                "operationId": "bddedec6f5ac09e7bc42649d9e846e12",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not your product"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Delete product (Vendor)",
+                "description": "Soft delete vendor's own product",
+                "operationId": "bf0f9e1c60672884ec001b41acb4557d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not your product"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/products/search": {
+            "get": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Search vendor's products",
+                "description": "Full-text search within vendor's own products",
+                "operationId": "2c5d07335f9ae49a5688ef4af5a43ee2",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search query (minimum 2 characters)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "minLength": 2
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/products/low-stock": {
+            "get": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Get low stock products (Vendor)",
+                "description": "Retrieve vendor's products with stock below threshold",
+                "operationId": "71791cd3143991ae7073f81365832382",
+                "responses": {
+                    "200": {
+                        "description": "Low stock products retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/vendor/products/bulk-import": {
+            "post": {
+                "tags": [
+                    "Vendor - Products"
+                ],
+                "summary": "Bulk import products (Vendor)",
+                "description": "Import multiple products for authenticated vendor",
+                "operationId": "ad73ba4f1bfe0a3248831e75b540d69d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "products": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/ProductRequest"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Import completed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -2008,6 +3954,152 @@
                 },
                 "type": "object"
             },
+            "OrderRequest": {
+                "title": "Order Request",
+                "description": "Request body for creating a new order",
+                "required": [
+                    "user_id",
+                    "items"
+                ],
+                "properties": {
+                    "user_id": {
+                        "description": "Customer user ID",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "items": {
+                        "description": "Array of order items",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "product_id",
+                                "quantity"
+                            ],
+                            "properties": {
+                                "product_id": {
+                                    "type": "integer",
+                                    "example": 10
+                                },
+                                "quantity": {
+                                    "type": "integer",
+                                    "example": 2
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "enum": [
+                            "cod",
+                            "credit_card",
+                            "debit_card",
+                            "paypal",
+                            "stripe"
+                        ],
+                        "example": "credit_card"
+                    },
+                    "payment_status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "paid",
+                            "failed",
+                            "refunded"
+                        ],
+                        "example": "pending"
+                    },
+                    "shipping_cost": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 10
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "tax": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 12
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Please ring doorbell",
+                        "nullable": true
+                    },
+                    "shipping_address": {
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "John Doe"
+                            },
+                            "phone": {
+                                "type": "string",
+                                "example": "+1234567890"
+                            },
+                            "address": {
+                                "type": "string",
+                                "example": "123 Main St"
+                            },
+                            "city": {
+                                "type": "string",
+                                "example": "New York"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "NY"
+                            },
+                            "postal_code": {
+                                "type": "string",
+                                "example": "10001"
+                            },
+                            "country": {
+                                "type": "string",
+                                "example": "USA"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "billing_address": {
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "John Doe"
+                            },
+                            "phone": {
+                                "type": "string",
+                                "example": "+1234567890"
+                            },
+                            "address": {
+                                "type": "string",
+                                "example": "123 Main St"
+                            },
+                            "city": {
+                                "type": "string",
+                                "example": "New York"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "NY"
+                            },
+                            "postal_code": {
+                                "type": "string",
+                                "example": "10001"
+                            },
+                            "country": {
+                                "type": "string",
+                                "example": "USA"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "Product": {
                 "title": "Product",
                 "description": "Product model",
@@ -2265,6 +4357,146 @@
                 },
                 "type": "object"
             },
+            "ProductRequest": {
+                "title": "Product Request",
+                "description": "Request body for creating or updating a product",
+                "required": [
+                    "category_id",
+                    "name",
+                    "description",
+                    "sku",
+                    "price",
+                    "stock_quantity"
+                ],
+                "properties": {
+                    "category_id": {
+                        "description": "Category ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "vendor_id": {
+                        "description": "Vendor ID (optional for vendors, required for admin)",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "name": {
+                        "description": "Product name",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Wireless Mouse"
+                    },
+                    "description": {
+                        "description": "Full product description",
+                        "type": "string",
+                        "example": "Ergonomic wireless mouse with USB receiver"
+                    },
+                    "short_description": {
+                        "description": "Short product description",
+                        "type": "string",
+                        "maxLength": 500,
+                        "example": "Comfortable wireless mouse"
+                    },
+                    "sku": {
+                        "description": "Stock Keeping Unit (unique)",
+                        "type": "string",
+                        "example": "MOUSE-001"
+                    },
+                    "price": {
+                        "description": "Regular price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 29.99
+                    },
+                    "sale_price": {
+                        "description": "Sale price (must be less than regular price)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 24.99
+                    },
+                    "cost_price": {
+                        "description": "Cost price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 15
+                    },
+                    "stock_quantity": {
+                        "description": "Current stock quantity",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "low_stock_threshold": {
+                        "description": "Low stock alert threshold",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "track_inventory": {
+                        "description": "Whether to track inventory",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_active": {
+                        "description": "Product active status",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_featured": {
+                        "description": "Featured product flag",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "images": {
+                        "description": "Product images URLs",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "https://example.com/image.jpg"
+                        }
+                    },
+                    "attributes": {
+                        "description": "Product attributes (color, size, etc.)",
+                        "type": "object",
+                        "example": {
+                            "color": "Black",
+                            "connectivity": "2.4GHz"
+                        }
+                    },
+                    "dimensions": {
+                        "description": "Product dimensions",
+                        "type": "object",
+                        "example": {
+                            "length": 10,
+                            "width": 6,
+                            "height": 4
+                        }
+                    },
+                    "weight": {
+                        "description": "Product weight",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.15
+                    },
+                    "weight_unit": {
+                        "description": "Weight unit",
+                        "type": "string",
+                        "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                        ],
+                        "example": "kg"
+                    },
+                    "meta_data": {
+                        "description": "Additional metadata",
+                        "type": "object",
+                        "example": {
+                            "seo_title": "Best Wireless Mouse",
+                            "seo_description": "Comfortable and ergonomic"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "title": "User",
                 "description": "User model with authentication and profile information",
@@ -2322,12 +4554,24 @@
     },
     "tags": [
         {
+            "name": "Admin - Orders",
+            "description": "Admin order management endpoints"
+        },
+        {
+            "name": "Admin - Products",
+            "description": "Admin product management endpoints - Full CRUD operations for products"
+        },
+        {
             "name": "Orders",
             "description": "Order management endpoints"
         },
         {
-            "name": "Products",
-            "description": "Product management endpoints"
+            "name": "Vendor - Orders",
+            "description": "Vendor order management endpoints"
+        },
+        {
+            "name": "Vendor - Products",
+            "description": "Vendor product management endpoints"
         },
         {
             "name": "Authentication",
