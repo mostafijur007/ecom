@@ -57,12 +57,12 @@ class OrderService
      */
     public function createOrder(array $data, ?int $userId = null): Order
     {
-        $this->validateOrderData($data);
-
-        // Set user ID if provided
+        // Set user ID if provided (before validation)
         if ($userId) {
             $data['user_id'] = $userId;
         }
+
+        $this->validateOrderData($data);
 
         return DB::transaction(function () use ($data) {
             // Validate and calculate order totals
