@@ -30,7 +30,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/orders",
+     *     path="/vendor/orders",
      *     summary="Get vendor's orders",
      *     description="Retrieve paginated list of orders containing vendor's products",
      *     tags={"Vendor - Orders"},
@@ -82,7 +82,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/orders/{id}",
+     *     path="/vendor/orders/{id}",
      *     summary="Get order by ID (Vendor)",
      *     description="Retrieve detailed information about order containing vendor's products",
      *     tags={"Vendor - Orders"},
@@ -134,7 +134,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Patch(
-     *     path="/api/vendor/orders/{id}/status",
+     *     path="/vendor/orders/{id}/status",
      *     summary="Update order status (Vendor)",
      *     description="Update status of order containing vendor's products (limited transitions)",
      *     tags={"Vendor - Orders"},
@@ -208,7 +208,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/orders/statistics",
+     *     path="/vendor/orders/statistics",
      *     summary="Get vendor's order statistics",
      *     description="Retrieve order statistics for vendor's products only",
      *     tags={"Vendor - Orders"},
@@ -244,7 +244,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/orders/recent",
+     *     path="/vendor/orders/recent",
      *     summary="Get vendor's recent orders",
      *     description="Retrieve recent orders containing vendor's products",
      *     tags={"Vendor - Orders"},

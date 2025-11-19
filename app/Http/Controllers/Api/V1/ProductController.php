@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * @OA\Tag(
- *     name="Admin - Products",
+ *     name="Products",
  *     description="Admin product management endpoints - Full CRUD operations for products"
  * )
  */

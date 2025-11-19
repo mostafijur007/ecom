@@ -31,7 +31,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/products",
+     *     path="/vendor/products",
      *     summary="Get vendor's products",
      *     description="Retrieve paginated list of products owned by authenticated vendor",
      *     tags={"Vendor - Products"},
@@ -90,7 +90,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/products/{id}",
+     *     path="/vendor/products/{id}",
      *     summary="Get product by ID (Vendor)",
      *     description="Retrieve detailed information about vendor's own product",
      *     tags={"Vendor - Products"},
@@ -142,7 +142,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/vendor/products",
+     *     path="/vendor/products",
      *     summary="Create new product (Vendor)",
      *     description="Create a new product for authenticated vendor",
      *     tags={"Vendor - Products"},
@@ -191,7 +191,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/vendor/products/{id}",
+     *     path="/vendor/products/{id}",
      *     summary="Update product (Vendor)",
      *     description="Update vendor's own product",
      *     tags={"Vendor - Products"},
@@ -256,7 +256,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/vendor/products/{id}",
+     *     path="/vendor/products/{id}",
      *     summary="Delete product (Vendor)",
      *     description="Soft delete vendor's own product",
      *     tags={"Vendor - Products"},
@@ -308,7 +308,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/products/search",
+     *     path="/vendor/products/search",
      *     summary="Search vendor's products",
      *     description="Full-text search within vendor's own products",
      *     tags={"Vendor - Products"},
@@ -371,7 +371,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/vendor/products/low-stock",
+     *     path="/vendor/products/low-stock",
      *     summary="Get low stock products (Vendor)",
      *     description="Retrieve vendor's products with stock below threshold",
      *     tags={"Vendor - Products"},
@@ -400,7 +400,7 @@ class ProductController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/vendor/products/bulk-import",
+     *     path="/vendor/products/bulk-import",
      *     summary="Bulk import products (Vendor)",
      *     description="Import multiple products for authenticated vendor",
      *     tags={"Vendor - Products"},

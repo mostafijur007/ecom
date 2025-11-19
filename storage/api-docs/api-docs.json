@@ -3472,14 +3472,14 @@
                 ]
             }
         },
-        "/api/vendor/orders": {
+        "/vendor/orders": {
             "get": {
                 "tags": [
                     "Vendor - Orders"
                 ],
                 "summary": "Get vendor's orders",
                 "description": "Retrieve paginated list of orders containing vendor's products",
-                "operationId": "04ce19ccad8fe5252298d89c7724b111",
+                "operationId": "ae56c8626bd72bdd99c57672362e1dd6",
                 "parameters": [
                     {
                         "name": "status",
@@ -3555,14 +3555,14 @@
                 ]
             }
         },
-        "/api/vendor/orders/{id}": {
+        "/vendor/orders/{id}": {
             "get": {
                 "tags": [
                     "Vendor - Orders"
                 ],
                 "summary": "Get order by ID (Vendor)",
                 "description": "Retrieve detailed information about order containing vendor's products",
-                "operationId": "93aa11ae3fbc816cde36bee43cdef4e8",
+                "operationId": "0c07cd4335666f5cb6f62e3e176aa032",
                 "parameters": [
                     {
                         "name": "id",
@@ -3611,14 +3611,14 @@
                 ]
             }
         },
-        "/api/vendor/orders/{id}/status": {
+        "/vendor/orders/{id}/status": {
             "patch": {
                 "tags": [
                     "Vendor - Orders"
                 ],
                 "summary": "Update order status (Vendor)",
                 "description": "Update status of order containing vendor's products (limited transitions)",
-                "operationId": "48420f676ba1b6ccf66e036a836a5a1e",
+                "operationId": "ce1142344f5d0985f6538551a3ffaa25",
                 "parameters": [
                     {
                         "name": "id",
@@ -3700,14 +3700,14 @@
                 ]
             }
         },
-        "/api/vendor/orders/statistics": {
+        "/vendor/orders/statistics": {
             "get": {
                 "tags": [
                     "Vendor - Orders"
                 ],
                 "summary": "Get vendor's order statistics",
                 "description": "Retrieve order statistics for vendor's products only",
-                "operationId": "ad47390772f73c7e067db7918a01100b",
+                "operationId": "f66aac58cbab2d0b35b7230d5ea6e7fc",
                 "responses": {
                     "200": {
                         "description": "Statistics retrieved",
@@ -3762,14 +3762,14 @@
                 ]
             }
         },
-        "/api/vendor/orders/recent": {
+        "/vendor/orders/recent": {
             "get": {
                 "tags": [
                     "Vendor - Orders"
                 ],
                 "summary": "Get vendor's recent orders",
                 "description": "Retrieve recent orders containing vendor's products",
-                "operationId": "58fcd7ebdb343845efb74813d5aeaa34",
+                "operationId": "0d0f8c35b1b6fb2e1c186afff31d41b0",
                 "parameters": [
                     {
                         "name": "days",
@@ -3823,14 +3823,14 @@
                 ]
             }
         },
-        "/api/vendor/products": {
+        "/vendor/products": {
             "get": {
                 "tags": [
                     "Vendor - Products"
                 ],
                 "summary": "Get vendor's products",
                 "description": "Retrieve paginated list of products owned by authenticated vendor",
-                "operationId": "1654a31e9477771b3ad8d2b9773c50bb",
+                "operationId": "c5e092bce49726de2260e4e3f037e39d",
                 "parameters": [
                     {
                         "name": "category_id",
@@ -3910,7 +3910,7 @@
                 ],
                 "summary": "Create new product (Vendor)",
                 "description": "Create a new product for authenticated vendor",
-                "operationId": "5e95b454f217beb7e3dd6b88e35a6cce",
+                "operationId": "d5fe7cb9de63feb25e818fe01d0b957c",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3959,14 +3959,14 @@
                 ]
             }
         },
-        "/api/vendor/products/{id}": {
+        "/vendor/products/{id}": {
             "get": {
                 "tags": [
                     "Vendor - Products"
                 ],
                 "summary": "Get product by ID (Vendor)",
                 "description": "Retrieve detailed information about vendor's own product",
-                "operationId": "7ce59dd1cc35ad80c11546868a754033",
+                "operationId": "ce00c99e7af265d1d3e94fa3e93a94f9",
                 "parameters": [
                     {
                         "name": "id",
@@ -4020,7 +4020,7 @@
                 ],
                 "summary": "Update product (Vendor)",
                 "description": "Update vendor's own product",
-                "operationId": "bddedec6f5ac09e7bc42649d9e846e12",
+                "operationId": "43d570d325209074d81b4b1c57a037d0",
                 "parameters": [
                     {
                         "name": "id",
@@ -4091,7 +4091,7 @@
                 ],
                 "summary": "Delete product (Vendor)",
                 "description": "Soft delete vendor's own product",
-                "operationId": "bf0f9e1c60672884ec001b41acb4557d",
+                "operationId": "30729f2522ca83697dc44fe60c24b4a2",
                 "parameters": [
                     {
                         "name": "id",
@@ -4141,14 +4141,14 @@
                 ]
             }
         },
-        "/api/vendor/products/search": {
+        "/vendor/products/search": {
             "get": {
                 "tags": [
                     "Vendor - Products"
                 ],
                 "summary": "Search vendor's products",
                 "description": "Full-text search within vendor's own products",
-                "operationId": "2c5d07335f9ae49a5688ef4af5a43ee2",
+                "operationId": "5c9c88035f81cdc952a9b238108622c6",
                 "parameters": [
                     {
                         "name": "q",
@@ -4202,14 +4202,14 @@
                 ]
             }
         },
-        "/api/vendor/products/low-stock": {
+        "/vendor/products/low-stock": {
             "get": {
                 "tags": [
                     "Vendor - Products"
                 ],
                 "summary": "Get low stock products (Vendor)",
                 "description": "Retrieve vendor's products with stock below threshold",
-                "operationId": "71791cd3143991ae7073f81365832382",
+                "operationId": "ed56f3801e3189247cb0fc865560e1fa",
                 "responses": {
                     "200": {
                         "description": "Low stock products retrieved",
@@ -4241,14 +4241,14 @@
                 ]
             }
         },
-        "/api/vendor/products/bulk-import": {
+        "/vendor/products/bulk-import": {
             "post": {
                 "tags": [
                     "Vendor - Products"
                 ],
                 "summary": "Bulk import products (Vendor)",
                 "description": "Import multiple products for authenticated vendor",
-                "operationId": "ad73ba4f1bfe0a3248831e75b540d69d",
+                "operationId": "641772f16a59301e54676189ac6301f8",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -5243,7 +5243,7 @@
         },
         {
             "name": "Admin - Products",
-            "description": "Admin product management endpoints - Full CRUD operations for products"
+            "description": "Admin product management endpoints"
         },
         {
             "name": "Orders",
