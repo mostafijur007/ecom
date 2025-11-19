@@ -16,6 +16,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @OA\Tag(
+ *     name="Orders",
+ *     description="Order management endpoints"
+ * )
+ */
 class OrderController extends Controller
 {
     use ApiResponse;
@@ -26,6 +32,87 @@ class OrderController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/v1/orders",
+     *     summary="Get list of orders",
+     *     description="Retrieve paginated list of orders (customers see only their own)",
+     *     operationId="getOrders",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="customer_id",
+     *         in="query",
+     *         description="Filter by customer ID (Admin/Vendor only)",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by order status",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pending", "processing", "shipped", "delivered", "cancelled"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="payment_status",
+     *         in="query",
+     *         description="Filter by payment status",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pending", "paid", "failed", "refunded"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="from_date",
+     *         in="query",
+     *         description="Filter orders from date (Y-m-d)",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="to_date",
+     *         in="query",
+     *         description="Filter orders to date (Y-m-d)",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort by field",
+     *         required=false,
+     *         @OA\Schema(type="string", default="created_at")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"asc", "desc"}, default="desc")
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Orders retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Orders retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Order")),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated")
+     * )
+     *
      * Display a listing of orders
      */
     public function index(Request $request): JsonResponse
@@ -69,6 +156,61 @@ class OrderController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/v1/orders",
+     *     summary="Create a new order",
+     *     description="Place a new order with multiple items (Customer only)",
+     *     operationId="createOrder",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"items","shipping_name","shipping_email","shipping_phone","shipping_address","shipping_city","shipping_state","shipping_postal_code","shipping_country","payment_method"},
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     required={"product_id","quantity"},
+     *                     @OA\Property(property="product_id", type="integer", example=1),
+     *                     @OA\Property(property="product_variant_id", type="integer", example=1),
+     *                     @OA\Property(property="quantity", type="integer", example=2)
+     *                 )
+     *             ),
+     *             @OA\Property(property="shipping_name", type="string", example="John Doe"),
+     *             @OA\Property(property="shipping_email", type="string", example="john@example.com"),
+     *             @OA\Property(property="shipping_phone", type="string", example="+1234567890"),
+     *             @OA\Property(property="shipping_address", type="string", example="123 Main St"),
+     *             @OA\Property(property="shipping_city", type="string", example="New York"),
+     *             @OA\Property(property="shipping_state", type="string", example="NY"),
+     *             @OA\Property(property="shipping_postal_code", type="string", example="10001"),
+     *             @OA\Property(property="shipping_country", type="string", example="USA"),
+     *             @OA\Property(property="payment_method", type="string", enum={"credit_card", "debit_card", "paypal", "bank_transfer", "cash_on_delivery"}, example="credit_card"),
+     *             @OA\Property(property="notes", type="string", example="Please ring doorbell")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Order created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order created successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error or items unavailable",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Some items are not available in requested quantity")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Forbidden - Customer role required")
+     * )
+     *
      * Create a new order
      */
     public function store(Request $request): JsonResponse
@@ -194,6 +336,41 @@ class OrderController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/v1/orders/{id}",
+     *     summary="Get order details",
+     *     description="Retrieve detailed information about a specific order (Customers can only view their own orders)",
+     *     operationId="showOrder",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer"),
+     *         example=1
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order retrieved successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Order not found")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Forbidden - Customers can only view their own orders")
+     * )
+     *
      * Display the specified order
      */
     public function show(string $id): JsonResponse
@@ -215,6 +392,56 @@ class OrderController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/v1/orders/{id}/status",
+     *     summary="Update order status",
+     *     description="Update the status of an order through its workflow (Admin/Vendor only). Valid transitions: pending→processing, processing→shipped, shipped→delivered. Cannot update cancelled or delivered orders.",
+     *     operationId="updateOrderStatus",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer"),
+     *         example=1
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 enum={"pending", "processing", "shipped", "delivered", "cancelled"},
+     *                 example="processing",
+     *                 description="New status for the order"
+     *             ),
+     *             @OA\Property(property="notes", type="string", example="Order is being prepared")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order status updated successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid status transition",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Invalid status transition")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Forbidden - Customers cannot update order status"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
+     *
      * Update order status
      */
     public function updateStatus(Request $request, string $id): JsonResponse
@@ -254,8 +481,8 @@ class OrderController extends Controller
             $this->inventoryService->restoreInventory($order);
         }
 
-        // Send notification
-        SendOrderNotification::dispatch($order, 'status_updated');
+        // Send notification with old status
+        SendOrderNotification::dispatch($order, 'status_updated', $oldStatus);
 
         return $this->successResponse(
             $order->load(['customer', 'items.product']),
@@ -264,6 +491,42 @@ class OrderController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/v1/orders/{id}/cancel",
+     *     summary="Cancel an order",
+     *     description="Cancel an order and restore inventory. Orders can only be cancelled if status is 'pending' or 'processing'. Shipped and delivered orders cannot be cancelled.",
+     *     operationId="cancelOrder",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer"),
+     *         example=1
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order cancelled successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order cancelled successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Order cannot be cancelled",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Cannot cancel order. Only pending and processing orders can be cancelled")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Forbidden - Customers can only cancel their own orders"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
+     *
      * Cancel an order
      */
     public function cancel(string $id): JsonResponse
