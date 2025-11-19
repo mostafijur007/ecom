@@ -44,10 +44,15 @@ namespace App\Http\Controllers\Api\V1\Schemas;
  *     @OA\Property(property="shipping_postal_code", type="string", example="10001"),
  *     @OA\Property(property="shipping_country", type="string", example="USA"),
  *     @OA\Property(property="subtotal", type="number", format="float", example=149.98),
- *     @OA\Property(property="tax_amount", type="number", format="float", example=12.00),
+ *     @OA\Property(property="tax", type="number", format="float", example=12.00),
  *     @OA\Property(property="shipping_cost", type="number", format="float", example=10.00),
- *     @OA\Property(property="discount_amount", type="number", format="float", example=0.00),
- *     @OA\Property(property="total_amount", type="number", format="float", example=171.98),
+ *     @OA\Property(property="discount", type="number", format="float", example=0.00),
+ *     @OA\Property(property="total", type="number", format="float", example=171.98),
+ *     @OA\Property(property="transaction_id", type="string", nullable=true, example="TXN123456789"),
+ *     @OA\Property(property="paid_at", type="string", format="date-time", nullable=true, example="2024-01-18T10:30:00Z"),
+ *     @OA\Property(property="shipped_at", type="string", format="date-time", nullable=true, example="2024-01-19T10:30:00Z"),
+ *     @OA\Property(property="delivered_at", type="string", format="date-time", nullable=true, example="2024-01-20T10:30:00Z"),
+ *     @OA\Property(property="cancelled_at", type="string", format="date-time", nullable=true, example=null),
  *     @OA\Property(property="notes", type="string", nullable=true, example="Please ring doorbell"),
  *     @OA\Property(
  *         property="items",
@@ -68,8 +73,8 @@ namespace App\Http\Controllers\Api\V1\Schemas;
  *     @OA\Property(property="product_id", type="integer", example=10),
  *     @OA\Property(property="product_variant_id", type="integer", nullable=true, example=5),
  *     @OA\Property(property="product_name", type="string", example="Wireless Headphones"),
- *     @OA\Property(property="product_sku", type="string", example="WH-001-BLK"),
  *     @OA\Property(property="variant_name", type="string", nullable=true, example="Black"),
+ *     @OA\Property(property="sku", type="string", example="WH-001-BLK"),
  *     @OA\Property(property="quantity", type="integer", example=2),
  *     @OA\Property(property="unit_price", type="number", format="float", example=74.99),
  *     @OA\Property(property="subtotal", type="number", format="float", example=149.98),
@@ -120,7 +125,7 @@ namespace App\Http\Controllers\Api\V1\Schemas;
  *     schema="OrderRequest",
  *     title="Order Request",
  *     description="Request body for creating a new order",
- *     required={"user_id", "items"},
+ *     required={"user_id", "items", "shipping_address"},
  *     @OA\Property(
  *         property="user_id",
  *         type="integer",
@@ -135,14 +140,15 @@ namespace App\Http\Controllers\Api\V1\Schemas;
  *             type="object",
  *             required={"product_id", "quantity"},
  *             @OA\Property(property="product_id", type="integer", example=10),
+ *             @OA\Property(property="variant_id", type="integer", nullable=true, example=5),
  *             @OA\Property(property="quantity", type="integer", example=2)
  *         )
  *     ),
  *     @OA\Property(
  *         property="payment_method",
  *         type="string",
- *         enum={"cod", "credit_card", "debit_card", "paypal", "stripe"},
- *         example="credit_card"
+ *         enum={"cash_on_delivery", "credit_card", "debit_card", "paypal", "bank_transfer"},
+ *         example="cash_on_delivery"
  *     ),
  *     @OA\Property(
  *         property="payment_status",
@@ -177,20 +183,9 @@ namespace App\Http\Controllers\Api\V1\Schemas;
  *     @OA\Property(
  *         property="shipping_address",
  *         type="object",
- *         nullable=true,
+ *         required={"name", "email", "phone", "address", "city", "state", "postal_code", "country"},
  *         @OA\Property(property="name", type="string", example="John Doe"),
- *         @OA\Property(property="phone", type="string", example="+1234567890"),
- *         @OA\Property(property="address", type="string", example="123 Main St"),
- *         @OA\Property(property="city", type="string", example="New York"),
- *         @OA\Property(property="state", type="string", example="NY"),
- *         @OA\Property(property="postal_code", type="string", example="10001"),
- *         @OA\Property(property="country", type="string", example="USA")
- *     ),
- *     @OA\Property(
- *         property="billing_address",
- *         type="object",
- *         nullable=true,
- *         @OA\Property(property="name", type="string", example="John Doe"),
+ *         @OA\Property(property="email", type="string", example="john@example.com"),
  *         @OA\Property(property="phone", type="string", example="+1234567890"),
  *         @OA\Property(property="address", type="string", example="123 Main St"),
  *         @OA\Property(property="city", type="string", example="New York"),

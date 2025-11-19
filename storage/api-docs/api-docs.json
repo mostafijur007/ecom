@@ -4403,7 +4403,7 @@
                         "format": "float",
                         "example": 149.98
                     },
-                    "tax_amount": {
+                    "tax": {
                         "type": "number",
                         "format": "float",
                         "example": 12
@@ -4413,15 +4413,44 @@
                         "format": "float",
                         "example": 10
                     },
-                    "discount_amount": {
+                    "discount": {
                         "type": "number",
                         "format": "float",
                         "example": 0
                     },
-                    "total_amount": {
+                    "total": {
                         "type": "number",
                         "format": "float",
                         "example": 171.98
+                    },
+                    "transaction_id": {
+                        "type": "string",
+                        "example": "TXN123456789",
+                        "nullable": true
+                    },
+                    "paid_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-18T10:30:00Z",
+                        "nullable": true
+                    },
+                    "shipped_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-19T10:30:00Z",
+                        "nullable": true
+                    },
+                    "delivered_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-20T10:30:00Z",
+                        "nullable": true
+                    },
+                    "cancelled_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
                     },
                     "notes": {
                         "type": "string",
@@ -4480,14 +4509,14 @@
                         "type": "string",
                         "example": "Wireless Headphones"
                     },
-                    "product_sku": {
-                        "type": "string",
-                        "example": "WH-001-BLK"
-                    },
                     "variant_name": {
                         "type": "string",
                         "example": "Black",
                         "nullable": true
+                    },
+                    "sku": {
+                        "type": "string",
+                        "example": "WH-001-BLK"
                     },
                     "quantity": {
                         "type": "integer",
@@ -4629,7 +4658,8 @@
                 "description": "Request body for creating a new order",
                 "required": [
                     "user_id",
-                    "items"
+                    "items",
+                    "shipping_address"
                 ],
                 "properties": {
                     "user_id": {
@@ -4650,6 +4680,11 @@
                                     "type": "integer",
                                     "example": 10
                                 },
+                                "variant_id": {
+                                    "type": "integer",
+                                    "example": 5,
+                                    "nullable": true
+                                },
                                 "quantity": {
                                     "type": "integer",
                                     "example": 2
@@ -4661,13 +4696,13 @@
                     "payment_method": {
                         "type": "string",
                         "enum": [
-                            "cod",
+                            "cash_on_delivery",
                             "credit_card",
                             "debit_card",
                             "paypal",
-                            "stripe"
+                            "bank_transfer"
                         ],
-                        "example": "credit_card"
+                        "example": "cash_on_delivery"
                     },
                     "payment_status": {
                         "type": "string",
@@ -4700,10 +4735,24 @@
                         "nullable": true
                     },
                     "shipping_address": {
+                        "required": [
+                            "name",
+                            "email",
+                            "phone",
+                            "address",
+                            "city",
+                            "state",
+                            "postal_code",
+                            "country"
+                        ],
                         "properties": {
                             "name": {
                                 "type": "string",
                                 "example": "John Doe"
+                            },
+                            "email": {
+                                "type": "string",
+                                "example": "john@example.com"
                             },
                             "phone": {
                                 "type": "string",
@@ -4730,42 +4779,7 @@
                                 "example": "USA"
                             }
                         },
-                        "type": "object",
-                        "nullable": true
-                    },
-                    "billing_address": {
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "example": "John Doe"
-                            },
-                            "phone": {
-                                "type": "string",
-                                "example": "+1234567890"
-                            },
-                            "address": {
-                                "type": "string",
-                                "example": "123 Main St"
-                            },
-                            "city": {
-                                "type": "string",
-                                "example": "New York"
-                            },
-                            "state": {
-                                "type": "string",
-                                "example": "NY"
-                            },
-                            "postal_code": {
-                                "type": "string",
-                                "example": "10001"
-                            },
-                            "country": {
-                                "type": "string",
-                                "example": "USA"
-                            }
-                        },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     }
                 },
                 "type": "object"

@@ -81,13 +81,39 @@ class OrderService
             // Create order items
             foreach ($data['items'] as $item) {
                 $product = $this->productRepository->findWithRelations($item['product_id']);
+                
+                // Determine if this is a variant or simple product
+                $variantId = $item['variant_id'] ?? null;
+                $price = null;
+                $sku = null;
+                $variantName = null;
+
+                if ($variantId && $product->type === 'variable') {
+                    // Handle variant product
+                    $variant = $product->variants()->find($variantId);
+                    
+                    if (!$variant) {
+                        throw new \Exception("Variant not found for product: {$product->name}");
+                    }
+                    
+                    $price = $variant->sale_price ?? $variant->price;
+                    $sku = $variant->sku;
+                    $variantName = $variant->name ?? $variant->sku;
+                } else {
+                    // Handle simple product
+                    $price = $product->sale_price ?? $product->price;
+                    $sku = $product->sku;
+                }
 
                 $order->items()->create([
                     'product_id' => $item['product_id'],
+                    'product_variant_id' => $variantId,
+                    'product_name' => $product->name,
+                    'variant_name' => $variantName,
                     'quantity' => $item['quantity'],
-                    'price' => $product->sale_price ?? $product->price,
-                    'subtotal' => ($product->sale_price ?? $product->price) * $item['quantity'],
-                    'vendor_id' => $product->vendor_id,
+                    'unit_price' => $price,
+                    'subtotal' => $price * $item['quantity'],
+                    'sku' => $sku,
                 ]);
             }
 
@@ -95,7 +121,7 @@ class OrderService
             $this->inventoryService->deductInventory($order);
 
             // Reload order with relationships
-            $order->load(['items.product', 'user', 'shippingAddress']);
+            $order->load(['items.product', 'items.variant', 'customer', 'invoice']);
 
             // Dispatch notification
             SendOrderNotification::dispatch($order, 'created');
@@ -327,7 +353,25 @@ class OrderService
 
         foreach ($data['items'] as $item) {
             $product = $this->productRepository->findWithRelations($item['product_id']);
-            $price = $product->sale_price ?? $product->price;
+            $price = null;
+            
+            // Check if this is a variant or simple product
+            $variantId = $item['variant_id'] ?? null;
+            
+            if ($variantId && $product->type === 'variable') {
+                // Get variant price
+                $variant = $product->variants()->find($variantId);
+                
+                if (!$variant) {
+                    throw new \Exception("Variant not found for product: {$product->name}");
+                }
+                
+                $price = $variant->sale_price ?? $variant->price;
+            } else {
+                // Get simple product price
+                $price = $product->sale_price ?? $product->price;
+            }
+            
             $subtotal += $price * $item['quantity'];
         }
 
@@ -337,11 +381,14 @@ class OrderService
 
         $total = $subtotal + $shippingCost + $tax - $discount;
 
+        // Extract shipping address fields
+        $shippingAddress = $data['shipping_address'] ?? [];
+        
         return [
-            'user_id' => $data['user_id'],
+            'customer_id' => $data['user_id'],
             'order_number' => $this->generateOrderNumber(),
             'status' => 'pending',
-            'payment_method' => $data['payment_method'] ?? 'cod',
+            'payment_method' => $data['payment_method'] ?? 'cash_on_delivery',
             'payment_status' => $data['payment_status'] ?? 'pending',
             'subtotal' => $subtotal,
             'tax' => $tax,
@@ -349,8 +396,16 @@ class OrderService
             'discount' => $discount,
             'total' => $total,
             'notes' => $data['notes'] ?? null,
-            'shipping_address' => $data['shipping_address'] ?? null,
-            'billing_address' => $data['billing_address'] ?? null,
+            
+            // Shipping information fields
+            'shipping_name' => $shippingAddress['name'] ?? '',
+            'shipping_email' => $shippingAddress['email'] ?? '',
+            'shipping_phone' => $shippingAddress['phone'] ?? '',
+            'shipping_address' => $shippingAddress['address'] ?? '',
+            'shipping_city' => $shippingAddress['city'] ?? '',
+            'shipping_state' => $shippingAddress['state'] ?? '',
+            'shipping_postal_code' => $shippingAddress['postal_code'] ?? '',
+            'shipping_country' => $shippingAddress['country'] ?? '',
         ];
     }
 
@@ -432,15 +487,23 @@ class OrderService
             'user_id' => 'required|exists:users,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
+            'items.*.variant_id' => 'nullable|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'payment_method' => 'nullable|string|in:cod,credit_card,debit_card,paypal,stripe',
+            'payment_method' => 'nullable|string|in:cash_on_delivery,credit_card,debit_card,paypal,bank_transfer',
             'payment_status' => 'nullable|string|in:pending,paid,failed,refunded',
             'shipping_cost' => 'nullable|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'tax' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
-            'shipping_address' => 'nullable|array',
-            'billing_address' => 'nullable|array',
+            'shipping_address' => 'required|array',
+            'shipping_address.name' => 'required|string|max:255',
+            'shipping_address.email' => 'required|email|max:255',
+            'shipping_address.phone' => 'required|string|max:255',
+            'shipping_address.address' => 'required|string',
+            'shipping_address.city' => 'required|string|max:255',
+            'shipping_address.state' => 'required|string|max:255',
+            'shipping_address.postal_code' => 'required|string|max:255',
+            'shipping_address.country' => 'required|string|max:255',
         ];
 
         $validator = Validator::make($data, $rules);

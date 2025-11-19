@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use App\Models\Order;
 use App\Jobs\LowStockAlert;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InventoryService
 {
@@ -72,7 +73,7 @@ class InventoryService
                     productId: $item->product_id,
                     transactionType: 'sale',
                     quantity: -$item->quantity, // negative for deduction
-                    variantId: $item->product_variant_id,
+                    variantId: $item->variant_id ?? $item->product_variant_id ?? null,
                     orderId: $order->id,
                     reference: $order->order_number,
                     notes: 'Inventory deducted for order'
@@ -100,7 +101,7 @@ class InventoryService
                     productId: $item->product_id,
                     transactionType: 'return',
                     quantity: $item->quantity, // positive for restoration
-                    variantId: $item->product_variant_id,
+                    variantId: $item->variant_id ?? $item->product_variant_id ?? null,
                     orderId: $order->id,
                     reference: $order->order_number,
                     notes: 'Inventory restored - order cancelled'
@@ -148,15 +149,18 @@ class InventoryService
         $unavailable = [];
 
         foreach ($items as $item) {
+            // Support both 'variant_id' and 'product_variant_id' keys
+            $variantId = $item['variant_id'] ?? $item['product_variant_id'] ?? null;
+            
             $available = $this->getAvailableStock(
                 $item['product_id'],
-                $item['product_variant_id'] ?? null
+                $variantId
             );
 
             if ($available < $item['quantity']) {
                 $unavailable[] = [
                     'product_id' => $item['product_id'],
-                    'variant_id' => $item['product_variant_id'] ?? null,
+                    'variant_id' => $variantId,
                     'requested' => $item['quantity'],
                     'available' => $available,
                 ];
