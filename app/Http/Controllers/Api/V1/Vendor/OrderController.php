@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Services\OrderService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,6 +16,8 @@ use Illuminate\Http\Request;
  */
 class OrderController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private OrderService $orderService
     ) {
@@ -61,10 +64,27 @@ class OrderController extends Controller
      *         description="Orders retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="message", type="string", example="Orders retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="data", type="array",
+     *                     @OA\Items(ref="#/components/schemas/Order")
+     *                 ),
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function index(Request $request): JsonResponse
@@ -74,10 +94,7 @@ class OrderController extends Controller
 
         $orders = $this->orderService->getVendorOrders($this->getVendorId(), $filters, $perPage);
 
-        return response()->json([
-            'success' => true,
-            'data' => $orders,
-        ]);
+        return $this->successResponse($orders, 'Orders retrieved successfully');
     }
 
     /**
@@ -99,37 +116,57 @@ class OrderController extends Controller
      *         description="Order retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *             @OA\Property(property="message", type="string", example="Order retrieved successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Order"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=403, description="Forbidden - Not your order"),
-     *     @OA\Response(response=404, description="Order not found"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Not your order",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="This order does not contain your products"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Order not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function show(int $id): JsonResponse
     {
         // Check ownership
         if (!$this->orderService->isOwnedByVendor($id, $this->getVendorId())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Forbidden - This order does not contain your products',
-            ], 403);
+            return $this->forbiddenResponse('This order does not contain your products');
         }
 
         $order = $this->orderService->getOrderById($id);
 
         if (!$order) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found',
-            ], 404);
+            return $this->notFoundResponse('Order not found');
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $order,
-        ]);
+        return $this->successResponse($order, 'Order retrieved successfully');
     }
 
     /**
@@ -160,23 +197,57 @@ class OrderController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Order status updated successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Order")
+     *             @OA\Property(property="data", ref="#/components/schemas/Order"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=403, description="Forbidden - Not your order or invalid status"),
-     *     @OA\Response(response=404, description="Order not found"),
-     *     @OA\Response(response=422, description="Invalid status transition"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Not your order or invalid status",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Vendors can only update status to processing or shipped"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Order not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Invalid status transition",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Cannot transition from pending to delivered"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         // Check ownership
         if (!$this->orderService->isOwnedByVendor($id, $this->getVendorId())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Forbidden - This order does not contain your products',
-            ], 403);
+            return $this->forbiddenResponse('This order does not contain your products');
         }
 
         try {
@@ -185,24 +256,15 @@ class OrderController extends Controller
 
             // Vendors can only set to processing or shipped
             if (!in_array($status, ['processing', 'shipped'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vendors can only update status to processing or shipped',
-                ], 403);
+                return $this->forbiddenResponse('Vendors can only update status to processing or shipped');
             }
 
             $order = $this->orderService->updateOrderStatus($id, $status, $notes);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Order status updated successfully',
-                'data' => $order,
-            ]);
+            return $this->successResponse($order, 'Order status updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getMessage() === 'Order not found' ? 404 : 422);
+            $statusCode = $e->getMessage() === 'Order not found' ? 404 : 422;
+            return $this->errorResponse($e->getMessage(), null, $statusCode);
         }
     }
 
@@ -218,6 +280,7 @@ class OrderController extends Controller
      *         description="Statistics retrieved",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Order statistics retrieved successfully"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="total_orders", type="integer"),
      *                 @OA\Property(property="total_revenue", type="number"),
@@ -227,7 +290,18 @@ class OrderController extends Controller
      *                 @OA\Property(property="shipped_count", type="integer"),
      *                 @OA\Property(property="delivered_count", type="integer"),
      *                 @OA\Property(property="cancelled_count", type="integer")
-     *             )
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     )
      * )
@@ -236,10 +310,7 @@ class OrderController extends Controller
     {
         $statistics = $this->orderService->getStatistics($this->getVendorId());
 
-        return response()->json([
-            'success' => true,
-            'data' => $statistics,
-        ]);
+        return $this->successResponse($statistics, 'Order statistics retrieved successfully');
     }
 
     /**
@@ -268,9 +339,21 @@ class OrderController extends Controller
      *         description="Recent orders retrieved",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Recent orders retrieved successfully"),
      *             @OA\Property(property="data", type="array",
      *                 @OA\Items(ref="#/components/schemas/Order")
-     *             )
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     )
      * )
@@ -285,12 +368,11 @@ class OrderController extends Controller
         // Filter by vendor
         $vendorId = $this->getVendorId();
         $vendorOrders = $orders->filter(function ($order) use ($vendorId) {
-            return $order->items()->where('vendor_id', $vendorId)->exists();
+            return $order->items()->whereHas('product', function ($query) use ($vendorId) {
+                $query->where('vendor_id', $vendorId);
+            })->exists();
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => $vendorOrders->values(),
-        ]);
+        return $this->successResponse($vendorOrders->values(), 'Recent orders retrieved successfully');
     }
 }

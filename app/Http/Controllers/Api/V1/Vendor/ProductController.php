@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Services\ProductService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +17,8 @@ use Illuminate\Validation\ValidationException;
  */
 class ProductController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private ProductService $productService
     ) {
@@ -69,10 +72,27 @@ class ProductController extends Controller
      *         description="Products retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="message", type="string", example="Products retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="data", type="array",
+     *                     @OA\Items(ref="#/components/schemas/Product")
+     *                 ),
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function index(Request $request): JsonResponse
@@ -82,10 +102,7 @@ class ProductController extends Controller
 
         $products = $this->productService->getVendorProducts($this->getVendorId(), $filters, $perPage);
 
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+        return $this->successResponse($products, 'Products retrieved successfully');
     }
 
     /**
@@ -107,37 +124,57 @@ class ProductController extends Controller
      *         description="Product retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Product")
+     *             @OA\Property(property="message", type="string", example="Product retrieved successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Product"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=403, description="Forbidden - Not your product"),
-     *     @OA\Response(response=404, description="Product not found"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Not your product",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="You do not own this product"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Product not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Product not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function show(int $id): JsonResponse
     {
         // Check ownership
         if (!$this->productService->isOwnedByVendor($id, $this->getVendorId())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Forbidden - You do not own this product',
-            ], 403);
+            return $this->forbiddenResponse('You do not own this product');
         }
 
         $product = $this->productService->getProductById($id);
 
         if (!$product) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Product not found',
-            ], 404);
+            return $this->notFoundResponse('Product not found');
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $product,
-        ]);
+        return $this->successResponse($product, 'Product retrieved successfully');
     }
 
     /**
@@ -157,11 +194,30 @@ class ProductController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Product created successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Product")
+     *             @OA\Property(property="data", ref="#/components/schemas/Product"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=422, description="Validation error"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function store(Request $request): JsonResponse
@@ -170,22 +226,11 @@ class ProductController extends Controller
             // Force vendor_id to authenticated user
             $product = $this->productService->createProduct($request->all(), $this->getVendorId());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Product created successfully',
-                'data' => $product,
-            ], 201);
+            return $this->createdResponse($product, 'Product created successfully');
         } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationErrorResponse($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse($e->getMessage(), null, 500);
         }
     }
 
@@ -213,44 +258,68 @@ class ProductController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Product updated successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Product")
+     *             @OA\Property(property="data", ref="#/components/schemas/Product"),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=403, description="Forbidden - Not your product"),
-     *     @OA\Response(response=404, description="Product not found"),
-     *     @OA\Response(response=422, description="Validation error"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Not your product",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="You do not own this product"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Product not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Product not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function update(Request $request, int $id): JsonResponse
     {
         // Check ownership
         if (!$this->productService->isOwnedByVendor($id, $this->getVendorId())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Forbidden - You do not own this product',
-            ], 403);
+            return $this->forbiddenResponse('You do not own this product');
         }
 
         try {
             $product = $this->productService->updateProduct($id, $request->all());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Product updated successfully',
-                'data' => $product,
-            ]);
+            return $this->successResponse($product, 'Product updated successfully');
         } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationErrorResponse($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getMessage() === 'Product not found' ? 404 : 500);
+            $statusCode = $e->getMessage() === 'Product not found' ? 404 : 500;
+            return $this->errorResponse($e->getMessage(), null, $statusCode);
         }
     }
 
@@ -273,36 +342,57 @@ class ProductController extends Controller
      *         description="Product deleted successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Product deleted successfully")
+     *             @OA\Property(property="message", type="string", example="Product deleted successfully"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=403, description="Forbidden - Not your product"),
-     *     @OA\Response(response=404, description="Product not found"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Not your product",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="You do not own this product"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Product not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Product not found"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function destroy(int $id): JsonResponse
     {
         // Check ownership
         if (!$this->productService->isOwnedByVendor($id, $this->getVendorId())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Forbidden - You do not own this product',
-            ], 403);
+            return $this->forbiddenResponse('You do not own this product');
         }
 
         try {
             $this->productService->deleteProduct($id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Product deleted successfully',
-            ]);
+            return $this->successResponse(null, 'Product deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getMessage() === 'Product not found' ? 404 : 500);
+            $statusCode = $e->getMessage() === 'Product not found' ? 404 : 500;
+            return $this->errorResponse($e->getMessage(), null, $statusCode);
         }
     }
 
@@ -332,10 +422,36 @@ class ProductController extends Controller
      *         description="Search results",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="message", type="string", example="Search results retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="data", type="array",
+     *                     @OA\Items(ref="#/components/schemas/Product")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer")
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     ),
-     *     @OA\Response(response=422, description="Validation error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     )
      * )
      */
     public function search(Request $request): JsonResponse
@@ -353,19 +469,12 @@ class ProductController extends Controller
                 return $product->vendor_id === $vendorId;
             });
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'data' => $filtered->values(),
-                    'total' => $filtered->count(),
-                ],
-            ]);
+            return $this->successResponse([
+                'data' => $filtered->values(),
+                'total' => $filtered->count(),
+            ], 'Search results retrieved successfully');
         } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationErrorResponse($e->errors(), 'Validation failed');
         }
     }
 
@@ -381,9 +490,21 @@ class ProductController extends Controller
      *         description="Low stock products retrieved",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Low stock products retrieved successfully"),
      *             @OA\Property(property="data", type="array",
      *                 @OA\Items(ref="#/components/schemas/Product")
-     *             )
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     )
      * )
@@ -392,10 +513,7 @@ class ProductController extends Controller
     {
         $products = $this->productService->getLowStockProducts($this->getVendorId());
 
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+        return $this->successResponse($products, 'Low stock products retrieved successfully');
     }
 
     /**
@@ -420,8 +538,25 @@ class ProductController extends Controller
      *         description="Import completed",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string"),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="message", type="string", example="Imported 10 products, 2 failed"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="imported", type="integer"),
+     *                 @OA\Property(property="failed", type="integer"),
+     *                 @OA\Property(property="errors", type="array",
+     *                     @OA\Items(type="object")
+     *                 )
+     *             ),
+     *             @OA\Property(property="errors", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated"),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="errors", type="null", example=null)
      *         )
      *     )
      * )
@@ -433,10 +568,6 @@ class ProductController extends Controller
         // Force vendor_id for all products
         $result = $this->productService->bulkImportProducts($products, $this->getVendorId());
 
-        return response()->json([
-            'success' => true,
-            'message' => "Imported {$result['imported']} products, {$result['failed']} failed",
-            'data' => $result,
-        ]);
+        return $this->successResponse($result, "Imported {$result['imported']} products, {$result['failed']} failed");
     }
 }
