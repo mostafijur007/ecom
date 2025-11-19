@@ -147,7 +147,7 @@ class OrderRepository implements OrderRepositoryInterface
             });
         }
 
-        return (float) $query->sum('total_amount');
+        return (float) $query->sum('total');
     }
 
     public function getStatistics(?int $vendorId = null): array
@@ -167,8 +167,8 @@ class OrderRepository implements OrderRepositoryInterface
             'shipped_orders' => (clone $query)->where('status', 'shipped')->count(),
             'delivered_orders' => (clone $query)->where('status', 'delivered')->count(),
             'cancelled_orders' => (clone $query)->where('status', 'cancelled')->count(),
-            'total_revenue' => (float) (clone $query)->whereIn('status', ['processing', 'shipped', 'delivered'])->sum('total_amount'),
-            'average_order_value' => (float) (clone $query)->whereIn('status', ['processing', 'shipped', 'delivered'])->avg('total_amount'),
+            'total_revenue' => (float) (clone $query)->whereIn('status', ['processing', 'shipped', 'delivered'])->sum('total'),
+            'average_order_value' => (float) (clone $query)->whereIn('status', ['processing', 'shipped', 'delivered'])->avg('total'),
         ];
     }
 }
