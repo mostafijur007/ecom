@@ -47,6 +47,13 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/refresh', [AuthController::class, 'refresh'])
         ->middleware('throttle:auth');
 
+    
+    // Product browsing
+    Route::get('products', [CustomerController::class, 'browseProducts']);
+    Route::get('products/search', [CustomerController::class, 'searchProducts']);
+    Route::get('products/featured', [CustomerController::class, 'featuredProducts']);
+    Route::get('products/{id}', [CustomerController::class, 'getProduct']);
+
     // ========================================================================
     // PROTECTED ROUTES - Require authentication (auth:api middleware)
     // ========================================================================
@@ -167,13 +174,6 @@ Route::prefix('v1')->group(function () {
             // Profile management
             Route::get('profile', [CustomerController::class, 'profile']);
             Route::put('profile', [CustomerController::class, 'updateProfile']);
-
         });
-        
-        // Product browsing
-        Route::get('products', [CustomerController::class, 'browseProducts']);
-        Route::get('products/search', [CustomerController::class, 'searchProducts']);
-        Route::get('products/featured', [CustomerController::class, 'featuredProducts']);
-        Route::get('products/{id}', [CustomerController::class, 'getProduct']);
     });
 });
