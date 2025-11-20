@@ -121,11 +121,11 @@ class OrderService
             $this->inventoryService->deductInventory($order);
 
             // Reload order with relationships
-            $order->load(['items.product', 'items.variant', 'customer', 'invoice']);
+            $order->load(['items', 'customer']);
 
             // Generate invoice after payment
             GenerateInvoice::dispatch($order);
-            
+
             // Dispatch notification
             SendOrderNotification::dispatch($order, 'created');
 

@@ -32,8 +32,11 @@ class GenerateInvoice implements ShouldQueue
     public function handle(): void
     {
         try {
+            // Reload order from database to check if invoice already exists
+            $this->order->refresh();
+            
             // Check if invoice already exists
-            if ($this->order->invoice) {
+            if ($this->order->invoice()->exists()) {
                 Log::info('Invoice already exists for order', ['order_id' => $this->order->id]);
                 return;
             }
@@ -41,13 +44,16 @@ class GenerateInvoice implements ShouldQueue
             // Load order relationships
             $this->order->load(['items', 'customer']);
 
+            // Ensure order total is not null
+            $orderTotal = $this->order->total ?? 0;
+
             // Create invoice record
             $invoice = Invoice::create([
                 'order_id' => $this->order->id,
                 'invoice_number' => Invoice::generateInvoiceNumber(),
                 'invoice_date' => now(),
                 'due_date' => now()->addDays(30),
-                'amount' => $this->order->total,
+                'amount' => $orderTotal,
                 'status' => $this->order->payment_status === 'paid' ? 'paid' : 'draft',
             ]);
 

@@ -199,17 +199,17 @@
                     @if($order->customer)
                     <strong>{{ $order->customer->name }}</strong><br>
                     {{ $order->customer->email }}<br>
+                    @if($order->customer->phone)
+                    Phone: {{ $order->customer->phone }}<br>
                     @endif
-                    @if($order->billing_address)
-                    {{ $order->billing_address }}<br>
-                    {{ $order->billing_city }}, {{ $order->billing_state }} {{ $order->billing_postal_code }}<br>
-                    {{ $order->billing_country }}
                     @endif
                 </td>
                 <td>
                     <h3>Ship To</h3>
                     <strong>{{ $order->shipping_name }}</strong><br>
+                    @if($order->shipping_email)
                     {{ $order->shipping_email }}<br>
+                    @endif
                     @if($order->shipping_phone)
                     Phone: {{ $order->shipping_phone }}<br>
                     @endif
