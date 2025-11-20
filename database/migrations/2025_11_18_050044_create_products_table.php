@@ -47,7 +47,11 @@ return new class extends Migration
             $table->index('sku');
             $table->index('is_active');
             $table->index('is_featured');
-            $table->fullText(['name', 'description', 'short_description']);
+            
+            // Only add fulltext index for MySQL/MariaDB
+            if (config('database.default') !== 'sqlite') {
+                $table->fullText(['name', 'description', 'short_description']);
+            }
         });
     }
 

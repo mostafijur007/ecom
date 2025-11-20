@@ -19,9 +19,17 @@ class ProductRepository implements ProductRepositoryInterface
     {
         $query = $this->model->with(['category', 'vendor', 'variants']);
 
-        // Search by keyword (full-text search)
+        // Search by keyword (use LIKE for SQLite compatibility)
         if (!empty($filters['search'])) {
-            $query->whereRaw('MATCH(name, description) AGAINST(? IN BOOLEAN MODE)', [$filters['search']]);
+            $searchTerm = $filters['search'];
+            if (config('database.default') === 'sqlite') {
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('description', 'LIKE', "%{$searchTerm}%");
+                });
+            } else {
+                $query->whereRaw('MATCH(name, description) AGAINST(? IN BOOLEAN MODE)', [$searchTerm]);
+            }
         }
 
         // Filter by category
@@ -101,10 +109,18 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function search(string $query, int $perPage = 20): LengthAwarePaginator
     {
-        return $this->model->with(['category', 'vendor'])
-            ->whereRaw('MATCH(name, description) AGAINST(? IN BOOLEAN MODE)', [$query])
-            ->where('is_active', true)
-            ->paginate($perPage);
+        $builder = $this->model->with(['category', 'vendor']);
+        
+        if (config('database.default') === 'sqlite') {
+            $builder->where(function($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                  ->orWhere('description', 'LIKE', "%{$query}%");
+            });
+        } else {
+            $builder->whereRaw('MATCH(name, description) AGAINST(? IN BOOLEAN MODE)', [$query]);
+        }
+        
+        return $builder->where('is_active', true)->paginate($perPage);
     }
 
     public function getByVendor(int $vendorId, array $filters = [], int $perPage = 15): LengthAwarePaginator
