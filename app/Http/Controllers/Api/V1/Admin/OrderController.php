@@ -7,7 +7,10 @@ use App\Services\OrderService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /**
  * @OA\Tag(
@@ -517,5 +520,91 @@ class OrderController extends Controller
         $statistics = $this->orderService->getStatistics($vendorId);
 
         return $this->successResponse($statistics, 'Order statistics retrieved successfully');
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/admin/orders/{id}/invoice",
+     *     summary="Download order invoice (Admin)",
+     *     description="Download the PDF invoice for a specific order",
+     *     tags={"Admin - Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Order ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="download",
+     *         in="query",
+     *         description="Set to true to force download, false to view inline",
+     *         required=false,
+     *         @OA\Schema(type="boolean", default=true)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Invoice PDF file",
+     *         @OA\MediaType(
+     *             mediaType="application/pdf"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order or invoice not found"
+     *     )
+     * )
+     */
+    public function downloadInvoice(int $id, Request $request): HttpResponse
+    {
+        try {
+            $order = $this->orderService->getOrderById($id);
+
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found',
+                    'data' => null,
+                    'errors' => ['order' => ['Order not found']]
+                ], 404);
+            }
+
+            $invoice = $order->invoice;
+
+            if (!$invoice || !$invoice->pdf_path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invoice not found or not yet generated',
+                    'data' => null,
+                    'errors' => ['invoice' => ['Invoice not found or not yet generated']]
+                ], 404);
+            }
+
+            if (!Storage::disk('public')->exists($invoice->pdf_path)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invoice PDF file not found',
+                    'data' => null,
+                    'errors' => ['file' => ['Invoice PDF file not found in storage']]
+                ], 404);
+            }
+
+            $pdfContent = Storage::disk('public')->get($invoice->pdf_path);
+            $filename = $invoice->invoice_number . '.pdf';
+            $download = $request->boolean('download', true);
+
+            return response($pdfContent, 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', ($download ? 'attachment' : 'inline') . '; filename="' . $filename . '"');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve invoice',
+                'data' => null,
+                'errors' => ['error' => [$e->getMessage()]]
+            ], 500);
+        }
     }
 }

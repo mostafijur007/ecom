@@ -982,6 +982,53 @@
                 ]
             }
         },
+        "/admin/orders/{id}/invoice": {
+            "get": {
+                "tags": [
+                    "Admin - Orders"
+                ],
+                "summary": "Download order invoice (Admin)",
+                "description": "Download the PDF invoice for a specific order",
+                "operationId": "a2345f8fa7b3bfbe5b3ce95f07032c88",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "download",
+                        "in": "query",
+                        "description": "Set to true to force download, false to view inline",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invoice PDF file",
+                        "content": {
+                            "application/pdf": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Order or invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/products": {
             "get": {
                 "tags": [

@@ -123,8 +123,12 @@ class OrderService
             // Reload order with relationships
             $order->load(['items.product', 'items.variant', 'customer', 'invoice']);
 
+            // Generate invoice after payment
+            GenerateInvoice::dispatch($order);
+            
             // Dispatch notification
             SendOrderNotification::dispatch($order, 'created');
+
 
             return $order;
         });

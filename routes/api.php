@@ -105,6 +105,8 @@ Route::prefix('v1')->group(function () {
                     ->name('admin.orders.statistics');
                 Route::get('/{id}', [OrderController::class, 'show'])
                     ->name('admin.orders.show');
+                Route::get('/{id}/invoice', [OrderController::class, 'downloadInvoice'])
+                    ->name('admin.orders.downloadInvoice');
                 Route::patch('/{id}/status', [OrderController::class, 'updateStatus'])
                     ->name('admin.orders.updateStatus');
                 Route::patch('/{id}/payment', [OrderController::class, 'updatePayment'])
